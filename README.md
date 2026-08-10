@@ -30,7 +30,7 @@ git clone https://github.com/improbable-ai/walk-these-ways.git
 git clone https://github.com/google-deepmind/mujoco_menagerie.git
 ```
 
-⚠️ **사전학습 가중치는 WTW 저장소 안에 들어 있다.** 클론하면
+ **사전학습 가중치는 WTW 저장소 안에 들어 있다.** 클론하면
 `walk-these-ways/runs/gait-conditioned-agility/pretrain-v0/train/025417.456545/`에
 `body_latest.jit` · `adaptation_module_latest.jit` · `parameters.pkl` ·
 `curriculum/distribution.pkl`이 함께 온다. 넷 다 필요하다 —
@@ -97,7 +97,7 @@ os.chdir(P); sys.path.insert(0, P)
 | `notebooks/03_eval_hlc.ipynb` | 평가·시각화 |
 | `notebooks/04_terrain_measure.py` | 지형 한계 실측 |
 
-⚠️ 파일명이 숫자로 시작해 **`import`할 수 없다.** `%run notebooks/01_llc_check.py`로 돌리거나
+ 파일명이 숫자로 시작해 **`import`할 수 없다.** `%run notebooks/01_llc_check.py`로 돌리거나
 `wtw_nav.*`를 직접 import 한다.
 
 ### 3. 학습
@@ -107,7 +107,7 @@ os.chdir(P); sys.path.insert(0, P)
 
 ```python
 from wtw_nav import bench
-bench.breakdown()          # ⚠️ raw env.step만 잰다. 실제는 ×0.58 (PPO 갱신 30% + eval 18%)
+bench.breakdown()          #  raw env.step만 잰다. 실제는 ×0.58 (PPO 갱신 30% + eval 18%)
 ```
 
 ```python
@@ -179,9 +179,9 @@ limits.report()
 과거 루트에 있던 `wtw_mjx_core.py` / `train_hlc.py` / `run_mjx_sweep.py`가 **유실 사고**를
 냈고, Colab에서 `sys.path` 취급도 불안정하다.
 
-⚠️ **`walk-these-ways/`와 `mujoco_menagerie/`는 수정하지 않는다.** 외부 읽기 전용이다.
+ **`walk-these-ways/`와 `mujoco_menagerie/`는 수정하지 않는다.** 외부 읽기 전용이다.
 
-⚠️ **Colab에서 `%autoreload`를 쓰지 말 것** — autoreload가 import 하는 `imp`는 Python
+ **Colab에서 `%autoreload`를 쓰지 말 것** — autoreload가 import 하는 `imp`는 Python
 3.12에서 제거됐고 Colab은 3.12다. 대신 `from wtw_nav.dev import reload_wtw; reload_wtw()`
 후 다시 import 한다. **기존 객체는 옛 클래스에 묶여 있으니 재생성해야 한다.**
 
