@@ -1,0 +1,12 @@
+# 저장소 안에서는 항상 LF로 둔다. 이 코드는 Colab(Linux)에서 도는데
+# Windows에서 편집하므로, 이게 없으면 CRLF가 섞여 들어간다.
+* text=auto eol=lf
+
+# 바이너리
+*.pkl binary
+*.mp4 binary
+*.jit binary
+*.pt  binary
+
+# GitHub 언어 통계에서 외부/보관 자료를 제외한다
+docs/archive/** linguist-documentation
