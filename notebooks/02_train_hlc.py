@@ -51,10 +51,10 @@ P1은 진단용으로 끝났다(`configs.PPOConfig` 주석). 지금 돌리는 �
     )
     train.run(cfg, tag=f"p2_{KIND}", logdir=f"runs/p2_{KIND}")
 
-⚠️ **`tag`/`logdir`를 반드시 넘길 것.** 기본값이 `p1_flat`/`runs/hlc`라 그냥 부르면
+주의 — **`tag`/`logdir`를 반드시 넘길 것.** 기본값이 `p1_flat`/`runs/hlc`라 그냥 부르면
 P1 체크포인트를 덮어쓰고 텐서보드 로그가 섞인다.
 
-⚠️ **아래 세 값은 코스 길이에 물려 있다.** 코스 길이는 `terrain.values`가 정하므로
+주의 — **아래 세 값은 코스 길이에 물려 있다.** 코스 길이는 `terrain.values`가 정하므로
 (`modules.ladder`의 `end_x`) 지형을 바꾸면 셋 다 다시 계산해야 한다. 자동화되어
 있지 않다 — `NavEnv._preflight`가 어긋나면 경고를 찍으니 첫 출력을 확인할 것.
 
@@ -94,7 +94,7 @@ LLC 소관이다. 요철도 진폭 0으로 미학습이지만 MJX box 격자 비
 gap에서 footswing이 무력했던 이유("발을 높이 들 뿐 멀리 보내지 않는다")가 여기엔
 해당하지 않는다. 그래서 이 실험은 gap과 달리 양의 결과가 나올 수 있다.
 
-⚠️ **다만 LLC는 경사를 '간접적으로는' 이미 겪었다.** `randomize_gravity=True,
+주의 — **다만 LLC는 경사를 '간접적으로는' 이미 겪었다.** `randomize_gravity=True,
 gravity_range=[-2,2]`이고 `_randomize_gravity`가 정규화된 기울어진 중력을 만들어
 그것이 `projected_gravity`(LLC 관측 [0:3])의 기준이 된다. 지지면 기준으로
 "기울어진 중력 + 평지" = "수직 중력 + 경사면"이므로, LLC가 겪은 **유효 경사는
@@ -106,12 +106,12 @@ gravity_range=[-2,2]`이고 `_randomize_gravity`가 정규화된 기울어진 �
   · 정보가 있는 구간은 **15~30°**. HLC의 값어치는 여기서만 판정된다.
   · `level >= 2`는 HLC의 성과가 아니다. **판정 기준선은 대조군 A의 level이다.**
 
-⚠️ **상한은 마찰이 정한다.** 지형 μ=0.6이면 tan⁻¹(0.6)=30.96°가 물리적 상한이고
+주의 — **상한은 마찰이 정한다.** 지형 μ=0.6이면 tan⁻¹(0.6)=30.96°가 물리적 상한이고
 사다리 마지막 단 30°는 필요 μ 0.577로 여유가 4%뿐이다. 30°에서 멈추는 것은
 "제어 실패"가 아니라 **마찰 상한**이며, 그렇게 해석이 확정되도록 일부러 마지막에
 두었다 (`configs.TerrainConfig.PRESETS` 주석).
 
-⚠️ **대조군 A를 먼저 돌릴 것.** gap 실행의 결론이 "PPO 6.9M = 고정 명령"이었던
+주의 — **대조군 A를 먼저 돌릴 것.** gap 실행의 결론이 "PPO 6.9M = 고정 명령"이었던
 것을 기억할 것 — 대조군이 없었으면 5.7시간에서 아무것도 못 건졌다::
 
     from wtw_nav.configs import default_config, TerrainConfig
@@ -142,7 +142,7 @@ gravity_range=[-2,2]`이고 `_randomize_gravity`가 정규화된 기울어진 �
      자기가 겪은 중력 기울기 분포와 같다.
   ② **pitch만 유효하다.** height·footswing은 값을 어떻게 줘도 level이 변하지
      않는다(소수점까지 동일). 8축 중 경사를 사는 축은 하나다.
-  ③ ⚠️ **최적 pitch가 상한에 붙은 채 단조 증가였다.** 그래서 `ActionConfig.pitch`를
+  ③ 주의 — **최적 pitch가 상한에 붙은 채 단조 증가였다.** 그래서 `ActionConfig.pitch`를
      ±0.35 -> ±0.4(LLC 학습 범위 전체)로 넓혔다. 넓히기 전 이 표의 3.00은
      **능력이 아니라 우리가 그은 선**을 잰 값이다.
   ④ ★ **낙상이 0건이다.** 종료 스텝이 전부 30의 배수(=`stuck_steps`)였다 —
@@ -181,7 +181,7 @@ gravity_range=[-2,2]`이고 `_randomize_gravity`가 정규화된 기울어진 �
               brax의 epoch 올림 낭비를 없앤다 -> 24×40,960×6 = **5,898,240**
               (gap 실행은 이걸 안 맞춰 6M 지정에 6.88M을 돌았다 = 45분 낭비)
 
-⚠️ 이 지형에서만 유효한 수정 셋 (2026-08-02, gap에서는 z=0이라 안 드러났다):
+주의 — 이 지형에서만 유효한 수정 셋 (2026-08-02, gap에서는 z=0이라 안 드러났다):
   · 낙상 판정이 **지면 기준(AGL)** 이 됐다. 절대 z를 쓰면 지형이 3.6 m까지
     올라가므로 `qpos[2] < 0.15`가 영원히 거짓이라 낙상이 감지되지 않았다.
   · `level` 판정선이 장애물 **끝** + 0.5 m로 바뀌었다. 옛 규칙(시작 + 0.8)은
@@ -197,11 +197,11 @@ gravity_range=[-2,2]`이고 `_randomize_gravity`가 정규화된 기울어진 �
 (gap 0.05 / ledge 0.07 / slope 20° / tunnel 0.291 / rough 0.06), 제외 3종
 (jump / slit / beam). 남은 것은 길찾기다.
 
-⚠️ **설정을 노트북에서 계산하지 않는다.** `configs.maze_config()`가 BFS 경로에서
+주의 — **설정을 노트북에서 계산하지 않는다.** `configs.maze_config()`가 BFS 경로에서
 timeout·reach·γ를 뽑는다. 슬로프의 상수(60 s / reach 110)를 미로에 복사했다가
 21시간짜리를 걸었고, seed마다 경로가 달라 상수는 원리적으로 틀린다.
 
-⚠️ **`max_geom_pairs=32`가 기본으로 켜져 있다** (`maze_config`). 이게 없으면
+주의 — **`max_geom_pairs=32`가 기본으로 켜져 있다** (`maze_config`). 이게 없으면
 78 steps/s = 21시간이다. 근거는 `docs/01_llc.md` §8.5.
 
 ---------------------------------------------------------------- 고정 셀 (3개)
@@ -210,7 +210,7 @@ timeout·reach·γ를 뽑는다. 슬로프의 상수(60 s / reach 110)를 미로
 
     !pip -q install mujoco mujoco-mjx brax
 
-[2] 마운트·경로·리로드 — ⚠️ **코드를 고칠 때마다 이 셀부터**::
+[2] 마운트·경로·리로드 — 주의 — **코드를 고칠 때마다 이 셀부터**::
 
     import os, sys
     os.environ["MUJOCO_GL"] = "egl"          # ★ 다른 어떤 import보다 먼저
@@ -219,7 +219,7 @@ timeout·reach·γ를 뽑는다. 슬로프의 상수(60 s / reach 110)를 미로
     os.chdir(P); sys.path.insert(0, P)
     from wtw_nav.dev import reload_wtw; reload_wtw()
 
-[3] 공통 import — ⚠️ **[2] 뒤에는 반드시 이 셀도 다시**::
+[3] 공통 import — 주의 — **[2] 뒤에는 반드시 이 셀도 다시**::
 
     import dataclasses as dc
     from wtw_nav.configs import maze_config
@@ -273,7 +273,7 @@ timeout·reach·γ를 뽑는다. 슬로프의 상수(60 s / reach 110)를 미로
 
 ★ **P4 결과 (2026-08-10)**: 도달률 **0.992**, 에피소드 91스텝(9.1 s)로 스크립트
 제어기(14.4 s)보다 1.6배 빠름, 낙상 0.008. 5.9M 스텝 234분.
-⚠️ 도달률 95%에 **2.46M(43% 지점)** 에서 닿았다 — 다음 실행은 3.2M이면 충분하다.
+주의 — 도달률 95%에 **2.46M(43% 지점)** 에서 닿았다 — 다음 실행은 3.2M이면 충분하다.
 상세는 `docs/03_results.md` §5.
 
 ★ 관측 37D에는 절대좌표도 맵 크기도 없으므로 **정책은 크기에 무관**해야 한다.

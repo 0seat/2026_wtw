@@ -50,7 +50,7 @@ def default_gl() -> str:
     **이미 그렇게 되어 있는데** 말이다. 원인을 엉뚱한 곳에서 찾게 되므로
     여기서 미리 갈라 놓는다 (2026-08-09).
 
-    ⚠️ CPU 런타임에서 osmesa를 쓰려면 시스템 라이브러리가 필요하다:
+    주의 — CPU 런타임에서 osmesa를 쓰려면 시스템 라이브러리가 필요하다:
         !apt-get -qq install -y libosmesa6-dev
     없으면 물리는 돌지만 **영상만 실패**한다.
     """
@@ -108,13 +108,13 @@ def build(ckpt=CKPT, xml=XML, verbose=True, iterations=None, ls_iterations=None,
               f"(nq={mj_model.nq}, nv={mj_model.nv}, ngeom={mj_model.ngeom}, "
               f"backend={jax.default_backend()}, iters={iterations}/{ls_iterations})")
         if iterations < 8 or ls_iterations < 16:
-            print(f"  ⚠️ solver {iterations}/{ls_iterations} 는 **검증된 수렴 설정(8/16) 미만**입니다.\n"
+            print(f"  주의 — solver {iterations}/{ls_iterations} 는 **검증된 수렴 설정(8/16) 미만**입니다.\n"
                   "     이 구간에서는 접촉 해가 수렴하지 않아 보행이 실패하고, 결과가\n"
                   "     하드웨어(CPU/GPU)에 따라 달라집니다. 기본값이 8/16인데 4/8이 보인다면\n"
                   "     **수정된 policy.py가 반영되지 않은 것**입니다 (Drive 동기화 / 모듈 리로드 확인).")
         ok, msg = gl_status()
         if not ok:
-            print("  ⚠️ 렌더링 불가 (수치 지표는 정상 동작). 자세한 내용은 아래.\n" + msg)
+            print("  주의 — 렌더링 불가 (수치 지표는 정상 동작). 자세한 내용은 아래.\n" + msg)
     return dict(policy_fn=policy_fn, mj_model=mj_model, mj_data=mj_data,
                 mjx_model=mjx_model, jidx=jidx, rollout_fn=rollout_fn)
 
@@ -158,7 +158,7 @@ def rollout(env, commands, seconds=5.0, settle=0.5, verbose=False):
     finite = np.all(np.isfinite(qpos), axis=1) & np.all(np.isfinite(qvel), axis=1)
     if not finite.all():
         first = int(np.argmin(finite))
-        print(f"       ⚠️ 스텝 {first}/{n_steps} ({first * P.POLICY_DT:.2f}s)에서 발산")
+        print(f"       주의 — 스텝 {first}/{n_steps} ({first * P.POLICY_DT:.2f}s)에서 발산")
         if first > 0:
             j = max(0, first - 1)
             print(f"          직전: z={qpos[j, 2]:.4f}  |qvel|max={np.abs(qvel[j]).max():.1f}  "
@@ -180,7 +180,7 @@ def rollout(env, commands, seconds=5.0, settle=0.5, verbose=False):
 GL_HELP = """MuJoCo Renderer 생성 실패: {err}
   현재 MUJOCO_GL={gl!r}, 이미 로드된 백엔드={loaded}
 
-  ⚠️ MUJOCO_GL은 **mujoco를 import 하는 순간** 읽힙니다. 노트북에서 이미 mujoco가
+  주의 — MUJOCO_GL은 **mujoco를 import 하는 순간** 읽힙니다. 노트북에서 이미 mujoco가
      import된 뒤에 값을 바꿔도 소용이 없습니다 (glfw가 잡혀 있으면 headless에서 실패).
 
   해결: 런타임을 재시작하고, **첫 셀에서 다른 어떤 import보다 먼저** 설정하십시오.
@@ -190,7 +190,7 @@ GL_HELP = """MuJoCo Renderer 생성 실패: {err}
       # ↑ 이 두 줄이 mujoco / mujoco.mjx / wtw_nav 어떤 import보다도 먼저 와야 합니다
       from wtw_nav.llc import check
 
-  ⚠️ **GPU 런타임이 아니면 egl은 되지 않습니다** (EGL은 GPU 드라이버를 씁니다).
+  주의 — **GPU 런타임이 아니면 egl은 되지 않습니다** (EGL은 GPU 드라이버를 씁니다).
      CPU 런타임에서는 소프트웨어 렌더러를 씁니다 — 라이브러리를 먼저 깔아야 합니다:
 
       !apt-get -qq install -y libosmesa6-dev
@@ -258,12 +258,12 @@ def render(mj_model, qpos, fps=25, width=640, height=480, track=True,
 
     Args:
         every: 몇 프레임마다 그릴지. `None`이면 **qpos가 LLC 주기(50 Hz)로
-            기록됐다고 가정**하고 `fps`에서 역산한다. ⚠️ HLC 롤아웃
+            기록됐다고 가정**하고 `fps`에서 역산한다. 주의 — HLC 롤아웃
             (`envs.scripted`)은 10 Hz로 기록하므로 반드시 `every=1`을 넘겨야
             한다 — 안 그러면 5프레임 중 4개를 버려 2 fps 영상이 나온다.
         distance: 추적 카메라 거리 (m). 사다리 코스는 3~4가 보기 좋다.
         geomgroups: 그릴 geom group들. `None`이면 로봇 시각(0~2) + 지형
-            (`modules.TERRAIN_GROUP`). ⚠️ 아래 주석 참조 — 이걸 안 켜면 지형이
+            (`modules.TERRAIN_GROUP`). 주의 — 아래 주석 참조 — 이걸 안 켜면 지형이
             통째로 안 보인다.
 
     실패하면 조용히 넘어가지 않고 원인을 알려준다 (Colab에서는 `MUJOCO_GL=egl` 필요).
@@ -273,7 +273,7 @@ def render(mj_model, qpos, fps=25, width=640, height=480, track=True,
     try:
         renderer = mujoco.Renderer(mj_model, height=height, width=width)
     except (TypeError, ValueError):
-        # ⚠️ 인자가 잘못된 것을 GL 문제로 포장하지 않는다 (2026-08-06). `height`가
+        # 주의 — 인자가 잘못된 것을 GL 문제로 포장하지 않는다 (2026-08-06). `height`가
         #    실수로 명령값(-0.22)이 되어 죽었는데 "런타임을 재시작하십시오"라고
         #    안내하는 바람에 원인에서 멀어졌다. 원본 예외를 그대로 올린다.
         raise
@@ -318,7 +318,7 @@ def render(mj_model, qpos, fps=25, width=640, height=480, track=True,
         renderer.close()
 
     if frames and float(np.mean(frames[len(frames) // 2])) < 1.0:
-        print("       ⚠️ 프레임이 거의 검습니다 — GL 백엔드(EGL) 문제일 수 있습니다.")
+        print("       주의 — 프레임이 거의 검습니다 — GL 백엔드(EGL) 문제일 수 있습니다.")
     return frames
 
 
@@ -354,14 +354,14 @@ def _show(frames, fps, save=None, title="", show=None):
     인코더가 없어서 아무것도 못 보는 상황을 막는다.
     """
     if not frames:
-        print("       ⚠️ 프레임이 없습니다.")
+        print("       주의 — 프레임이 없습니다.")
         return
     if show is None:
         show = in_notebook()
     try:
         import mediapy
     except ImportError:
-        print("       ⚠️ mediapy 없음 → `pip install mediapy`. 표시를 건너뜁니다.")
+        print("       주의 — mediapy 없음 → `pip install mediapy`. 표시를 건너뜁니다.")
         return
 
     if save:
@@ -369,7 +369,7 @@ def _show(frames, fps, save=None, title="", show=None):
             mediapy.write_video(save, frames, fps=fps)
             print(f"       저장: {save}")
         except Exception as e:                       # 대개 ffmpeg 부재
-            print(f"       ⚠️ mp4 저장 실패({type(e).__name__}: {e}). "
+            print(f"       주의 — mp4 저장 실패({type(e).__name__}: {e}). "
                   "표시는 계속합니다. 필요하면 `apt install ffmpeg`.")
 
     if not show:
@@ -378,13 +378,13 @@ def _show(frames, fps, save=None, title="", show=None):
     try:
         mediapy.show_video(frames, fps=fps, title=title)
     except Exception as e:
-        print(f"       ⚠️ 동영상 표시 실패({type(e).__name__}) → 정지 프레임으로 대체")
+        print(f"       주의 — 동영상 표시 실패({type(e).__name__}) → 정지 프레임으로 대체")
         k = max(1, len(frames) // 6)
         try:
             mediapy.show_images(frames[::k][:6], columns=6,
                                 titles=[f"{i*k}" for i in range(len(frames[::k][:6]))])
         except Exception as e2:
-            print(f"       ⚠️ 정지 프레임 표시도 실패({type(e2).__name__}: {e2})")
+            print(f"       주의 — 정지 프레임 표시도 실패({type(e2).__name__}: {e2})")
 
 
 def smoke_test(env=None, steps=10):
@@ -396,7 +396,7 @@ def smoke_test(env=None, steps=10):
     print(f"        z: {out['qpos'][0, 2]:.3f} -> {out['qpos'][-1, 2]:.3f}, "
           f"x: {out['qpos'][-1, 0]:+.4f}")
     if not np.all(np.isfinite(out["qpos"])):
-        print("        ⚠️ qpos에 NaN/Inf — 물리가 발산했습니다.")
+        print("        주의 — qpos에 NaN/Inf — 물리가 발산했습니다.")
     return out
 
 
@@ -515,7 +515,7 @@ SWEEPS = {
 def jump_metrics(qpos, mj_model, settle=25, min_steps=2):
     """점프의 '품질'을 잰다 — 체공률만으로는 판단할 수 없다.
 
-    ⚠️ 체공률(4발이 동시에 뜬 비율)은 **점프의 증거가 아니다.** 다리를 몸쪽으로
+    주의 — 체공률(4발이 동시에 뜬 비율)은 **점프의 증거가 아니다.** 다리를 몸쪽으로
     접기만 해도 발은 뜬다. 실제로 이 정책의 pronk가 그렇다: 체공률 20~30%인데
     **정점 상승이 +0.001 m**로 몸통이 전혀 뜨지 않는다.
 
@@ -595,26 +595,26 @@ def version_check():
         mtime = _dt.datetime.fromtimestamp(os.path.getmtime(path))
         print(f"  {mod.__name__:22s} {mtime:%Y-%m-%d %H:%M}  {path}")
 
-    # ⚠️ 시그니처 기본값만 보면 안 된다 — build()가 자기 기본값으로 덮어쓰던 버그를
+    # 주의 — 시그니처 기본값만 보면 안 된다 — build()가 자기 기본값으로 덮어쓰던 버그를
     #    이 방식으로는 못 잡았다. **실제로 모델을 만들어** 최종 반영값을 확인한다.
     m, _, _ = P.create_env(XML, verbose=False)
     it, ls = int(m.opt.iterations), int(m.opt.ls_iterations)
     good = (it >= 8 and ls >= 16)
     ok &= good
     print(f"\n  실제 생성된 모델의 solver = {it}/{ls}  "
-          f"{'OK (수렴 설정)' if good else '❌ 8/16 이어야 합니다'}")
+          f"{'OK (수렴 설정)' if good else '8/16 이어야 합니다'}")
 
     sig = inspect.signature(build)
     bd = (sig.parameters["iterations"].default, sig.parameters["ls_iterations"].default)
     good = bd == (None, None)
     ok &= good
     print(f"  build()의 solver 기본값 = {bd}  "
-          f"{'OK (create_env에 위임)' if good else '❌ 기본값을 중복 정의하고 있습니다'}")
+          f"{'OK (create_env에 위임)' if good else '기본값을 중복 정의하고 있습니다'}")
 
     legs = tuple(n[:2] for n in P.JOINT_NAMES_WTW[::3])
     good = legs == ("FL", "FR", "RL", "RR")
     ok &= good
-    print(f"  DOF 순서 = {legs}  {'OK' if good else '❌ FL,FR,RL,RR 이어야 합니다'}")
+    print(f"  DOF 순서 = {legs}  {'OK' if good else 'FL,FR,RL,RR 이어야 합니다'}")
 
     if not ok:
         print("\n  → Drive 동기화를 기다린 뒤 **런타임 재시작**하거나,\n"
@@ -745,7 +745,7 @@ def deadzone_sweep(env=None, seconds=6.0, vals=(0.0, 0.05, 0.10, 0.15, 0.20, 0.3
         print(f"정지 편향 = {out[0.0][0]:+.3f} m/s  "
               f"(이를 없애려면 vx≈{-out[0.0][0]:.2f} 명령이 필요)")
 
-    # ⚠️ 지표만 믿지 말 것 — 전복한 로봇도 mean_vx가 그럴듯하게 나올 수 있다
+    # 주의 — 지표만 믿지 말 것 — 전복한 로봇도 mean_vx가 그럴듯하게 나올 수 있다
     #    (pronk 체공률 오판 사례, llc_port_debug §8). 판정 장면을 눈으로 볼 것.
     if video:
         os.makedirs("checkpoints/llc_check", exist_ok=True)
@@ -757,7 +757,7 @@ def deadzone_sweep(env=None, seconds=6.0, vals=(0.0, 0.05, 0.10, 0.15, 0.20, 0.3
                       save=f"checkpoints/llc_check/deadzone_vx{v:.2f}.mp4",
                       title=f"vx cmd={v:.2f} -> 실측 {out[v][0]:+.3f} m/s")
             except Exception as e:
-                print(f"       ⚠️ 렌더 실패({type(e).__name__}: {e})")
+                print(f"       주의 — 렌더 실패({type(e).__name__}: {e})")
                 print("          Colab이면 mujoco import **전에** MUJOCO_GL=egl")
                 break
     return out

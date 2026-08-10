@@ -35,7 +35,7 @@ class ProgressMonitor:
     """
 
     #: 인라인 플롯에 그릴 지표 (있는 것만 그린다)
-    #: ⚠️ 라벨은 **ASCII만** — Colab 기본 폰트(DejaVu Sans)에 한글 글리프가 없어
+    #: 주의 — 라벨은 **ASCII만** — Colab 기본 폰트(DejaVu Sans)에 한글 글리프가 없어
     #: 매 프레임 `UserWarning: Glyph ... missing from font(s)`가 쏟아진다.
     #: 콘솔 표는 한글이어도 무방하다(폰트와 무관).
     PLOT_KEYS = (
@@ -142,7 +142,7 @@ class ProgressMonitor:
             ax.grid(alpha=0.3)
         self._fig.tight_layout()
 
-        # ⚠️ `clear_output()`을 쓰면 **셀 출력 전체**가 지워져 진행 표까지 사라진다.
+        # 주의 — `clear_output()`을 쓰면 **셀 출력 전체**가 지워져 진행 표까지 사라진다.
         # 그러면 학습이 멈춘 것처럼 보인다. 그림 하나만 제자리 갱신할 것.
         if self._disp is None:
             self._disp = display.display(self._fig, display_id=True)

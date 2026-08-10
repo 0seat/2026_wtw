@@ -38,7 +38,7 @@ from mujoco import mjx
 
 #: WTW/Isaac의 DOF 순서 — **FL, FR, RL, RR** (각 다리 안에서는 hip, thigh, calf).
 #:
-#: ⚠️ **여기가 이 이식에서 가장 함정이었던 지점이다.**
+#: 주의 — **여기가 이 이식에서 가장 함정이었던 지점이다.**
 #: `go1.urdf` 파일의 joint 등장 순서는 `FR, FL, RR, RL`이지만 Isaac Gym이 돌려주는
 #: DOF 순서는 그것이 아니다. 근거:
 #:   - `legged_robot.py:878-902`가 `foot_indices[0]`을 **FL**로, [1]을 FR, [2]를 RL,
@@ -70,7 +70,7 @@ DEFAULT_DOF_POS_WTW = jnp.array([
 HIP_INDICES = (0, 3, 6, 9)
 
 #: Cfg.init_state.pos — 리셋 시 몸통 높이. 이 자세에서 발은 지면 위 1.5~2.5 cm에 뜬다.
-#: ⚠️ `mj_resetData`는 모델 기본값(z=0.445, 관절 0 = 다리를 편 상태로 발이 지면을 관통)을
+#: 주의 — `mj_resetData`는 모델 기본값(z=0.445, 관절 0 = 다리를 편 상태로 발이 지면을 관통)을
 #: 주므로 **반드시 `wtw_init_qpos`로 덮어써야 한다.** 그러지 않으면 t=0에 접촉이 잡힌 채
 #: PD가 웅크린 자세로 당기면서 로봇이 튕겨 나가고 물리가 발산한다.
 INIT_BASE_POS = (0.0, 0.0, 0.34)
@@ -238,7 +238,7 @@ def _apply_collision_filter(mj_model, mode: str, verbose: bool = False) -> None:
     `world`(전 geom 유지) + k=32로 **708 steps/s (9.1배)**, ETA 21시간 -> 141분.
     게다가 그쪽은 맵 크기에 O(1)이다. 측정 경위는 `docs/01_llc.md` §8.5.
 
-    ⚠️ 폐기 기록 — `"maze"` 모드(바닥/벽 비트마스크 분리, 벽은 몸통·정강이·발만)를
+    주의 — 폐기 기록 — `"maze"` 모드(바닥/벽 비트마스크 분리, 벽은 몸통·정강이·발만)를
     만들었다가 **지웠다.** 78 -> 109로 1.4배뿐이었다. 쌍은 403 -> 247(1.6배)인데
     `feet`(143쌍)은 11배라 초선형이었고, 차이는 정강이 캡슐 8개 = `CAPSULE-BOX`
     104쌍뿐이다. 그 조합이 비용을 지배한다고 볼 수밖에 없으나 **11배의 기전은
@@ -251,7 +251,7 @@ def _apply_collision_filter(mj_model, mode: str, verbose: bool = False) -> None:
       · 로봇 vs 로봇       : (2&1)|(2&1) = 0   -> 필터
       · 바닥 vs 벽         : (1&4)|(4&1) = 0   -> 필터 (덤)
 
-    ⚠️ **지형 사다리에 쓰지 말 것.** 사다리는 바닥 평면을 지우고 전부 BOX로 만들기
+    주의 — **지형 사다리에 쓰지 말 것.** 사다리는 바닥 평면을 지우고 전부 BOX로 만들기
     때문에(`modules._spec`) 전 지형이 "벽"으로 분류되고, 그러면 다리가 턱·요철을
     통과한다 — `feet`을 평지 전용으로 못박은 것과 같은 이유다. 호출부에서 막는다.
     """
@@ -299,7 +299,7 @@ def create_env(xml_path: str, kp: float = KP, kd: float = KD,
     """MuJoCo/MJX 모델을 WTW 학습 조건에 맞춰 설정한다.
 
     WTW는 `control_type = "actuator_net"` — 학습된 액추에이터 네트워크를 씁니다.
-    ⚠️ 여기서는 이를 이상적인 PD(Kp=20, Kd=0.5)로 **근사**합니다. 이는 제거할 수 없는
+    주의 — 여기서는 이를 이상적인 PD(Kp=20, Kd=0.5)로 **근사**합니다. 이는 제거할 수 없는
     sim-to-sim 격차이며, 추종 오차가 남는다면 1순위 용의자입니다.
 
     Args:
@@ -311,8 +311,8 @@ def create_env(xml_path: str, kp: float = KP, kd: float = KD,
             ls_iterations 50**). MJX는 솔버 반복을 컴파일 그래프에 그대로 펼치므로 이대로면
             XLA 컴파일만 수십 분이 걸립니다. True면 pyramidal cone, impratio 1,
             발 condim 3, Newton `iterations`/`ls_iterations`로 바꿉니다.
-            ⚠️ 접촉 해의 정확도가 낮아지는 **근사**입니다.
-        iterations, ls_iterations: 기본 **8/16**. ⚠️ 이 값을 낮추지 마십시오.
+            주의 — 접촉 해의 정확도가 낮아지는 **근사**입니다.
+        iterations, ls_iterations: 기본 **8/16**. 주의 — 이 값을 낮추지 마십시오.
             MJX는 접촉 해가 덜 수렴하면 **정책이 보행에 실패**합니다. 실측 A/B:
 
                 4/8    vx=0.8 -> 0.218, min_z 0.058, 낙상
@@ -351,7 +351,7 @@ def create_env(xml_path: str, kp: float = KP, kd: float = KD,
         mj_model.opt.ls_iterations = ls_iterations
         # 발 접촉의 condim 6(비틀림·구름 마찰)은 MJX에서 특히 비싸다 -> 3으로.
         mj_model.geom_condim[mj_model.geom_condim > 3] = 3
-        # ⚠️ integrator는 Euler(menagerie 기본값)를 유지한다. mujoco_playground의
+        # 주의 — integrator는 Euler(menagerie 기본값)를 유지한다. mujoco_playground의
         #    implicitfast + iterations=1 조합은 이 모델·게인에서 발산한다(z가 100 m 이상으로
         #    튐). 실측으로 확인함 — 바꾸지 말 것.
         if verbose:
@@ -552,7 +552,7 @@ def make_rollout_fn(mjx_model, policy_fn, jidx, decimation: int = DECIMATION):
         (data, obs_history, gait, last_a, last_last_a, cmds[T, 15])
             -> (carry_final, qpos[T, nq], qvel[T, nv])
 
-    ⚠️ T가 바뀌면 재컴파일된다. 롤아웃 길이는 몇 종류로 고정해서 쓸 것.
+    주의 — T가 바뀌면 재컴파일된다. 롤아웃 길이는 몇 종류로 고정해서 쓸 것.
     """
     step = make_step_fn(mjx_model, policy_fn, jidx, decimation)
 
@@ -577,7 +577,7 @@ def make_closed_rollout_fn(mjx_model, policy_fn, jidx, cmd_fn,
     그것으로 잰 지형 능력은 배포와 무관하다는 것이 실측으로 드러났다(표류가 8초에
     3.3 m). 이 함수는 그 되먹임 경로를 만든다.
 
-    ⚠️ **`hlc_decimation` 스텝마다 한 번만 갱신한다.** LLC 50 Hz마다 보정하면
+    주의 — **`hlc_decimation` 스텝마다 한 번만 갱신한다.** LLC 50 Hz마다 보정하면
     실제 HLC(10 Hz)보다 5배 민첩한 제어기를 재게 되고, 그러면 측정이 다시 배포와
     어긋난다 — 방향만 반대인 같은 실수다. 갱신 사이에는 값을 물고 있는다.
 
@@ -608,7 +608,7 @@ def make_closed_rollout_fn(mjx_model, policy_fn, jidx, cmd_fn,
 
 #: WTW 보행 프리셋 (phase, offset, bound). `scripts/play.py:102`.
 #: DOF 순서를 FL,FR,RL,RR로 잡으면 이 이름들이 `clock_inputs`의 실제 발 조합과 일치한다.
-#: ⚠️ 인덱스 이름과 gait 이름이 어긋난다. `commands[6]`의 필드명은 `gait_offset`이지만
+#: 주의 — 인덱스 이름과 gait 이름이 어긋난다. `commands[6]`의 필드명은 `gait_offset`이지만
 #: 그것을 0.5로 두면 **bound**가 되고, `commands[7]`의 필드명은 `gait_bound`인데
 #: 0.5로 두면 **pace**가 된다. 검산 (DOF 순서 FL,FR,RL,RR):
 #:   offset=0.5 -> FL·FR 대 RL·RR = 앞뒤쌍 = bound
@@ -627,7 +627,7 @@ def make_commands(vx=0.0, vy=0.0, yaw=0.0, height=0.0, step_freq=3.0, gait="trot
                   stance_length=0.45) -> jnp.ndarray:
     """15D 명령 벡터를 조립한다. 고정 차원은 학습된 상수값으로 채운다.
 
-    ⚠️ `duty`(8)와 `roll`(11)은 이 체크포인트에서 상수로 학습되어 조작할 수 없으므로
+    주의 — `duty`(8)와 `roll`(11)은 이 체크포인트에서 상수로 학습되어 조작할 수 없으므로
     인자로 노출하지 않는다. 근거는 `docs/01_llc.md` §0.1·§14 — 커리큘럼
     상한 `limit_*`까지 폭이 0이라 **이 가중치는 그 축을 본 적이 없다.**
 
@@ -637,7 +637,7 @@ def make_commands(vx=0.0, vy=0.0, yaw=0.0, height=0.0, step_freq=3.0, gait="trot
     앞뒤 다리 간격은 틈 step-over에서 발이 닿는 거리와 직접 관련된 기하량이므로
     최소한 실측은 해봐야 한다. `terrain.measure.axis_screen()` 참조.
 
-    ⚠️ **HLC는 `gait="trot"` 만 쓸 것.** `pronk`는 몸통을 띄우지 못하면서
+    주의 — **HLC는 `gait="trot"` 만 쓸 것.** `pronk`는 몸통을 띄우지 못하면서
     (정점 상승 +0.001 m) MJX에서 전복을 유발한다 — `docs/03_results.md` §2.
     `pace`/`bound`는 검증하지 않았다. 다른 gait는 진단·비교 목적으로만 쓴다.
     """

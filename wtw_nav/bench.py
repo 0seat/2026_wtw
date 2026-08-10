@@ -9,7 +9,7 @@
     L1  LLC 1스텝 = 4×L0      <- + 정책 MLP 순전파
     L2  HLC 1스텝 = 5×L1      <- + 명령 필터·보상·종료 판정
 
-⚠️ **HLC 1스텝은 물리 스텝 20회다.** `PPOConfig.num_timesteps`는 HLC 스텝을 세므로
+주의 — **HLC 1스텝은 물리 스텝 20회다.** `PPOConfig.num_timesteps`는 HLC 스텝을 세므로
    30M은 곧 6억 번의 `mjx.step`이다. 벽시계 시간을 가늠할 땐 항상 ×20 하십시오.
 """
 
@@ -142,7 +142,7 @@ def breakdown(cfg: HLCConfig | None = None, num_envs: int = 2048, n: int = 10) -
 def solver_sweep(num_envs: int = 512, n: int = 10) -> None:
     """솔버 설정이 L0 비용을 얼마나 좌우하는지. MJX는 반복을 그래프에 펼친다.
 
-    ⚠️ 여기서 싸다고 바로 채택하면 안 된다 — 4/8은 GPU에서 **발산**했다
+    주의 — 여기서 싸다고 바로 채택하면 안 된다 — 4/8은 GPU에서 **발산**했다
     (`docs/03_results.md` §1.3). 비용을 알고 나서 정확도와 저울질할 것.
     """
     from mujoco import mjx
@@ -190,7 +190,7 @@ def collision_sweep(num_envs: int = 512, n: int = 10) -> None:
         base = base or pps
         print(f"{mode:>8s} {n_geom:>8d} {tc:>8.1f}s {ts*1e3:>8.1f}ms "
               f"{pps:>13,.0f} {pps/base:>5.1f}x")
-    print("\n  ⚠️ 빠르다고 바로 채택하지 말 것 — WTW는 `self_collisions=0`(자기충돌 켬)으로")
+    print("\n  주의 — 빠르다고 바로 채택하지 말 것 — WTW는 `self_collisions=0`(자기충돌 켬)으로")
     print("     학습했습니다. `python -m wtw_nav.llc.check`로 추종 성능을 확인한 뒤 정하십시오.")
 
 

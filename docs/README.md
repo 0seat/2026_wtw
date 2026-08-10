@@ -15,12 +15,12 @@ BFS 거리장(플래너) ──▶ HLC 10 Hz, 8D 명령 (PPO 학습) ──▶ L
 
 | # | 단계 | 게이트 | 상태 |
 |---|---|---|---|
-| P0 | LLC 이식 | torch↔JAX < 1e-4, vx=0.8 추종 | ✅ 2026-07-28 (`vx 0.871`) |
-| P0.5 | 명령 스윕 · 도약 판정 | pronk 4足 체공 | ✅ **도약 불가 확정** |
-| P1 | 평지 코스 + 유도 벡터 | 도달률 > 95% | ✅ |
-| P2·P3 | 지형 돌파 | — | ⛔ **폐기** ([0001](decisions/0001-지형-돌파-폐기.md)) |
-| P4 | 미로 주행 학습 | 도달률 > 70% | ✅ **99.2%** (2026-08-10, 234분) |
-| P5 | 일반화 판정 | 미학습 배치·큰 미로에서 유지 | 🔸 코드 완료, **실행 대기** |
+| P0 | LLC 이식 | torch↔JAX < 1e-4, vx=0.8 추종 | 완료 2026-07-28 (`vx 0.871`) |
+| P0.5 | 명령 스윕 · 도약 판정 | pronk 4足 체공 | 완료 — **도약 불가 확정** |
+| P1 | 평지 코스 + 유도 벡터 | 도달률 > 95% | 완료 |
+| P2·P3 | 지형 돌파 | — | **폐기** ([0001](decisions/0001-지형-돌파-폐기.md)) |
+| P4 | 미로 주행 학습 | 도달률 > 70% | 완료 — **99.2%** (2026-08-10, 234분) |
+| P5 | 일반화 판정 | 미학습 배치·큰 미로에서 유지 | 코드 완료, **실행 대기** |
 
 **다음 작업** — Colab에서 P5를 돌린다. 학습 미로의 99.2%가 **레이아웃 암기와 구분되지
 않기** 때문이다.
@@ -114,7 +114,7 @@ P4/P5 결과를 보고 판단한다.
 `01_llc_check.py`(LLC 검증) / `02_train_hlc.py`(학습, 장시간) /
 `03_eval_hlc.ipynb`(평가) / `04_terrain_measure.py`(지형 실측)
 
-⚠️ 파일명이 숫자로 시작하므로 **`import`할 수 없다** (`from notebooks import 01_llc_check`
+주의 — 파일명이 숫자로 시작하므로 **`import`할 수 없다** (`from notebooks import 01_llc_check`
 → `SyntaxError`). 로직은 전부 `wtw_nav/` 안에 있으니 그쪽을 import 한다.
 
 ### 외부 리소스
@@ -144,7 +144,7 @@ P4/P5 결과를 보고 판단한다.
    완전 역마샬할 수 없어, marshal 스트림에서 심볼·상수 문자열만 긁어 구조를 회수해야 했다
    (`MJX_TO_WTW` / `WTW_TO_MJX` / `DEFAULT_DOF_POS_WTW` / `COMMANDS_SCALE`). Colab에서
    `sys.path` 취급도 불안정하다.
-2. ⚠️ **`%autoreload` 금지.** IPython autoreload는 `imp`를 import 하는데 `imp`는 Python
+2. 주의 — **`%autoreload` 금지.** IPython autoreload는 `imp`를 import 하는데 `imp`는 Python
    3.12에서 제거됐고 Colab은 3.12다 ([colabtools#5758](https://github.com/googlecolab/colabtools/issues/5758)).
    대신:
    ```python
@@ -171,7 +171,7 @@ P4/P5 결과를 보고 판단한다.
 mp4 저장은 ffmpeg이 필요하지만 없어도 **표시는 계속**되며, 동영상 표시가 막히면
 정지 프레임으로 대체된다.
 
-⚠️ 화면이 검으면 GL 백엔드 문제다. **`MUJOCO_GL`은 mujoco import 前에 정해져야 한다** —
+주의 — 화면이 검으면 GL 백엔드 문제다. **`MUJOCO_GL`은 mujoco import 前에 정해져야 한다** —
 나중에 바꿔도 소용없다. GPU 런타임이면 `egl`, CPU 런타임이면 `osmesa`이고
 `policy.default_gl()`이 `/dev/nvidia*` 유무로 자동 판별한다.
 

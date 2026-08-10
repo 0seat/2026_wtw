@@ -19,7 +19,7 @@
 결정되므로 **지형에 맞춰 발을 놓는 능력이 구조적으로 없다.** HLC가 줄 수 있는 것은
 `footswing`·`body_height`·`step_freq` 같은 **전역 자세 조절**뿐이다.
 
-⚠️ **숫자만 믿지 말 것.** 통과 판정은 x·z 임계값으로 하는데, 이런 판정은 전에도
+주의 — **숫자만 믿지 말 것.** 통과 판정은 x·z 임계값으로 하는데, 이런 판정은 전에도
 틀린 적이 있다 — pronk 체공률 17.3%가 실은 **전복한 로봇의 발이 공중에 있던 것**
 이었고, 영상이 지표보다 옳았다(`docs/03_results.md` §2). 그래서 판정 장면을 반드시
 눈으로 확인한다.
@@ -111,7 +111,7 @@ def _video(res, title, save_name=None, fps=25):
     try:
         frames = check.render(res["mj_model"], res["qpos"], fps=fps, track=True)
     except Exception as e:
-        print(f"       ⚠️ 렌더 실패({type(e).__name__}: {e})")
+        print(f"       주의 — 렌더 실패({type(e).__name__}: {e})")
         print("          Colab이면 mujoco import **전에** os.environ['MUJOCO_GL']='egl'")
         return
     save = None
@@ -213,7 +213,7 @@ def gap_sweep(widths=(0.10, 0.15, 0.20, 0.25, 0.30, 0.40), x0=3.0, seconds=8.0,
     print("\n" + "-" * 70)
     print(f"★ 틈 폭 상한 = **{top:.2f} m**   (최선 조합: {winners})")
     if top < 0.15:
-        print("  ⚠️ 사실상 틈을 못 넘습니다. 미로에서 '틈'을 빼거나 LLC 재학습이 필요합니다.")
+        print("  주의 — 사실상 틈을 못 넘습니다. 미로에서 '틈'을 빼거나 LLC 재학습이 필요합니다.")
     print("  ※ 설계 문서의 0.5~0.7 m는 도약 전제였고, 도약은 불가능함이 확정됐습니다.")
 
     if video:
@@ -243,7 +243,7 @@ def ledge_sweep(heights=(0.02, 0.05, 0.08, 0.12, 0.16, 0.20), x0=3.0, seconds=8.
               f"{'z_min':>7s} {'|y|max':>7s} {'비고':>10s}")
         ok_max, first_fail = 0.0, None
         for h in heights:
-            # ⚠️ '떨어짐'을 '못 올라감'과 섞지 말 것 — 발판 길이가 짧아 끝을 지나
+            # 주의 — '떨어짐'을 '못 올라감'과 섞지 말 것 — 발판 길이가 짧아 끝을 지나
             #    떨어진 것을 '2 cm 턱에서 낙하'로 집계한 적이 있다(RUN_OUT 참조).
             r = _run(_build("ledge", h, x0=x0), kw, seconds)
             ok, note = _judge("ledge", h, r, x0)
@@ -280,7 +280,7 @@ def beam_sweep(widths=(2.0, 1.2, 0.8, 0.6, 0.4, 0.3), x0=3.0, seconds=8.0,
                video=True):
     """실측 ④ — 건널 수 있는 **외나무다리 폭**의 하한.
 
-    ⚠️ 다른 측정과 판정 규칙이 다르다. 여기서는 **옆으로 떨어지는 것이 곧 실패**다
+    주의 — 다른 측정과 판정 규칙이 다르다. 여기서는 **옆으로 떨어지는 것이 곧 실패**다
     (`_off_platform`을 쓰지 않는다). LLC가 직진 명령에도 선회한다는 것을 이미
     알고 있으므로, 이 값은 사실상 "8초 동안 표류가 폭의 절반을 넘지 않는가"를 잰다.
 
@@ -319,7 +319,7 @@ def beam_sweep(widths=(2.0, 1.2, 0.8, 0.6, 0.4, 0.3), x0=3.0, seconds=8.0,
         print(f"★ 다리 폭 하한 = **{top:.2f} m**   "
               f"(최선 조합: {[k for k, v in best.items() if v == top]})")
         if top > 0.5:
-            print("  ⚠️ 설계 문서의 BEAM 0.1~0.3 m는 달성 불가입니다.")
+            print("  주의 — 설계 문서의 BEAM 0.1~0.3 m는 달성 불가입니다.")
 
     if video:
         _best_scenes(best, scenes, "beam", "최소 통과", "첫 실패", "m", reverse=True)
@@ -331,7 +331,7 @@ def tunnel_sweep(clearances=(0.50, 0.45, 0.40, 0.35, 0.30, 0.25), x0=3.0,
                  seconds=8.0, video=True):
     """실측 ⑤ — 통과 가능한 **천장 높이**의 하한.
 
-    ⚠️ "지나갔다"만 보면 안 된다. 천장에 몸통이 닿아도 로봇은 멈추지 않고
+    주의 — "지나갔다"만 보면 안 된다. 천장에 몸통이 닿아도 로봇은 멈추지 않고
     **비벼서 밀고 나간다**. 그래서 통과 여부와 함께 `vx`를 같이 본다 — 평지 대비
     속도가 크게 깎였으면 그건 통과가 아니라 마찰로 기어나온 것이다.
     """
@@ -458,7 +458,7 @@ def axis_screen(kind="gap", value=0.20, axes=None, x0=3.0, ramp_len=3.0,
     비용은 조합이 아니라 합(Σ|축| ≈ 30회)이고, 결과는 "어느 축이 살아있는가"라는
     답을 준다. 살아난 축만 골라 그 다음에 조합한다.
 
-    ⚠️ `value`는 **현재 한계보다 조금 넘는 값**으로 줄 것. 이미 통과하는 지형에서는
+    주의 — `value`는 **현재 한계보다 조금 넘는 값**으로 줄 것. 이미 통과하는 지형에서는
     전 축이 O로 나와 아무것도 구별하지 못하고, 아무도 못 넘는 값에서는 전 축이 X다.
     틈이면 0.20(실측 상한 0.15), 턱이면 0.12 근처가 적당하다.
 
@@ -479,7 +479,7 @@ def axis_screen(kind="gap", value=0.20, axes=None, x0=3.0, ramp_len=3.0,
     print(f"\n[원점] {'O' if base_ok else 'X'} x_end={base_r['x_end']:.2f} "
           f"z_end={base_r['z_end']:.3f} z_min={base_r['z_min']:.3f} {base_note}")
     if base_ok:
-        print("  ⚠️ 원점이 이미 통과합니다. `value`를 더 어렵게 주십시오 — "
+        print("  주의 — 원점이 이미 통과합니다. `value`를 더 어렵게 주십시오 — "
               "전 축이 O로 나오면 아무것도 구별하지 못합니다.")
 
     live, dead = {}, []
@@ -513,7 +513,7 @@ def axis_screen(kind="gap", value=0.20, axes=None, x0=3.0, ramp_len=3.0,
     if live:
         print("  다음: 살아있는 축**만** 조합해 `ATTEMPTS`를 다시 짜고 스윕을 돌린다.")
     else:
-        print("  ⚠️ 전 축 무효 = 이 지형은 명령으로 넘을 수 없다. limits에서 지울 것.")
+        print("  주의 — 전 축 무효 = 이 지형은 명령으로 넘을 수 없다. limits에서 지울 것.")
     return live, dead
 
 
@@ -602,7 +602,7 @@ def sanity(seconds=8.0, video=True):
           f"z_min={r['z_min']:.3f} vx={r['mean_vx']:.3f} -> "
           f"{'OK' if ok else '*** FAIL ***'}")
     if not ok:
-        print("  ⚠️ 평지에서부터 실패합니다. 지형이 아니라 **발판 모델**이 문제입니다.")
+        print("  주의 — 평지에서부터 실패합니다. 지형이 아니라 **발판 모델**이 문제입니다.")
         if r["y_absmax"] > modules.PLATFORM_W - 0.5:
             print(f"     원인: 옆으로 이탈 (|y|max={r['y_absmax']:.2f} vs "
                   f"반폭 {modules.PLATFORM_W}). `modules.PLATFORM_W`를 키우십시오.")

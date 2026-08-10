@@ -20,7 +20,7 @@ from wtw_nav.configs import HLCConfig, default_config
 def scenarios(cfg: HLCConfig) -> tuple[tuple[str, float, int, bool, bool], ...]:
     """(이름, 이동거리 m, 소요 스텝, 도달?, 나쁜종료?).
 
-    ⚠️ 스텝 수를 상수로 박지 말 것 — `timeout_s`를 바꾸면 표가 조용히 틀려진다.
+    주의 — 스텝 수를 상수로 박지 말 것 — `timeout_s`를 바꾸면 표가 조용히 틀려진다.
     """
     n_max = int(cfg.term.timeout_s / 0.1)          # HLC 10 Hz
     reach_d = cfg.course.length - cfg.course.goal_radius
@@ -63,7 +63,7 @@ def main() -> int:
     print(f"\n① 도달 vs 1 m 앞 시간초과 : +{gap:.1f}  (최고 리턴의 {gap/abs(best):.0%})")
     if gap / abs(best) < 0.15:
         ok = False
-        print("   ❌ 마무리 유인이 너무 작습니다. `reach`를 올리십시오.")
+        print("   마무리 유인이 너무 작습니다. `reach`를 올리십시오.")
         print("      (2026-07-29: 11%였고 도달률이 0.17에서 안 올랐습니다)")
 
     # ② 빨리 끝내는 것이 이득이어야 한다. 아니면 정책이 시간을 다 쓴다.
@@ -71,7 +71,7 @@ def main() -> int:
     print(f"② 빠른 도달 vs 느린 도달  : +{sp:.1f}  (최고 리턴의 {sp/abs(best):.0%})")
     if sp <= 0:
         ok = False
-        print("   ❌ 서두를 이유가 없습니다. `time` 페널티를 키우십시오.")
+        print("   서두를 이유가 없습니다. `time` 페널티를 키우십시오.")
 
     # ③ 순위가 뒤집히면 안 된다.
     order = [n for n, _ in sorted(rows, key=lambda kv: -kv[1])]
@@ -80,7 +80,7 @@ def main() -> int:
     print(f"③ 최상위={order[0]!r}  최하위 2개={set(order[-2:])}")
     if order[0] != want_first or set(order[-2:]) != want_last:
         ok = False
-        print("   ❌ 순위가 의도와 다릅니다.")
+        print("   순위가 의도와 다릅니다.")
 
     print("\n" + ("PASS — 보상이 의도대로 순위를 매깁니다."
                   if ok else "*** FAIL — 학습 전에 보상 상수를 고치십시오 ***"))

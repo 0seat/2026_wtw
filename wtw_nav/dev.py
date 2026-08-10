@@ -1,6 +1,6 @@
 """노트북용 개발 편의 함수.
 
-⚠️ **Colab에서 `%autoreload`를 쓰지 마십시오.** IPython의 autoreload 확장은 `imp`를
+주의 — **Colab에서 `%autoreload`를 쓰지 마십시오.** IPython의 autoreload 확장은 `imp`를
 import 하는데, `imp`는 Python 3.12에서 제거됐고 Colab은 3.12다 →
 `ModuleNotFoundError: No module named 'imp'`.
 (참고: https://github.com/googlecolab/colabtools/issues/5758)
@@ -69,7 +69,7 @@ def reload_wtw(verbose: bool = True) -> list[str]:
         from wtw_nav.llc import check      # 이제 새 코드
         from wtw_nav import train
 
-    ⚠️ 이미 만들어 둔 객체(예: `env = check.build()`)는 **옛 클래스에 묶여 있다.**
+    주의 — 이미 만들어 둔 객체(예: `env = check.build()`)는 **옛 클래스에 묶여 있다.**
     코드를 고쳤다면 객체도 다시 만들어야 한다.
     """
     names = sorted(n for n in list(sys.modules)
@@ -113,7 +113,7 @@ def notebook_setup(project_dir: str | None = None, gl: str | None = None) -> Non
     print(f"cwd = {os.getcwd()}")
     print(f"MUJOCO_GL = {os.environ.get('MUJOCO_GL')!r}")
     if "mujoco" in sys.modules:
-        print("  ⚠️ mujoco가 이미 import 되어 있습니다 — MUJOCO_GL 변경이 반영되지 않습니다.\n"
+        print("  주의 — mujoco가 이미 import 되어 있습니다 — MUJOCO_GL 변경이 반영되지 않습니다.\n"
               "     렌더링이 필요하면 런타임을 재시작하고 이 셀을 가장 먼저 실행하십시오.")
     for p in ("walk-these-ways", "mujoco_menagerie", "wtw_nav"):
         print(f"  {'OK  ' if os.path.isdir(p) else 'MISS'} {p}")

@@ -73,14 +73,14 @@ def guidance_controller(obs: jnp.ndarray, cfg: ActionConfig,
     밟고 지나갔고**, 그것이 level 6.00으로 집계됐다 — 측정이 통째로 거짓이 될
     뻔했다. ②는 y를 직접 보므로 0.7 m에서 이미 ψ_des = -0.35 rad를 낸다.
 
-    ⚠️ 이건 LLC를 봐주는 장치가 아니라 **배포 조건 그 자체**다. 실제 시스템에는
+    주의 — 이건 LLC를 봐주는 장치가 아니라 **배포 조건 그 자체**다. 실제 시스템에는
     10 Hz HLC가 요를 잡고 있고, 그것 없이 잰 값은 배포와 무관하다
     (`guidance.heading_hold` 주석). 그래서 게인도 거기와 같은 값을 쓴다.
 
-    ⚠️ `hold`는 **traced 스칼라**다 (파이썬 bool이 아니다). 상수로 박으면 값마다
+    주의 — `hold`는 **traced 스칼라**다 (파이썬 bool이 아니다). 상수로 박으면 값마다
     재컴파일된다 — `base_a`와 같은 이유(`_episode_fn` 주석).
 
-    ⚠️ `yaw ∝ sinφ`로 하면 **목표를 정확히 등졌을 때(φ=180°) sinφ=0이라 회전하지 않는**
+    주의 — `yaw ∝ sinφ`로 하면 **목표를 정확히 등졌을 때(φ=180°) sinφ=0이라 회전하지 않는**
     잘못된 평형점이 생긴다. 각도 자체(`atan2`)를 쓰면 그 지점에서 최대 회전이 나온다.
 
     Args:
@@ -126,7 +126,7 @@ def terrain_env(kind: str, values=None, timeout_s: float = 60.0,
     Args:
         x0: 첫 장애물까지 조주 거리. ★ **턱 실험의 위상 손잡이다**
             (`phase_sweep` 참조). `None`이면 설정 기본값(3.0).
-            ⚠️ 값마다 **새 MJX 모델 = 새 컴파일**이다. 위상 8점이면 8회 컴파일이
+            주의 — 값마다 **새 MJX 모델 = 새 컴파일**이다. 위상 8점이면 8회 컴파일이
             드는데, 이건 피할 수 없다 — 지형 geom 위치가 바뀌기 때문이다.
     """
     import dataclasses as dc
@@ -166,7 +166,7 @@ def _yaw_np(quat: np.ndarray) -> np.ndarray:
 def _episode_fn(env: NavEnv):
     """★ **env당 1회만 컴파일되는** 전체 에피소드 함수. `env`에 캐시한다.
 
-    ⚠️ 예전에는 `rollout`이 호출마다 `jax.jit(env.step)`을 새로 만들었다
+    주의 — 예전에는 `rollout`이 호출마다 `jax.jit(env.step)`을 새로 만들었다
     (2026-08-02 수정). `jax.jit`의 캐시는 jit 객체마다 따로이므로 그러면
     **롤아웃마다 MJX가 재컴파일**된다. 시드 5개짜리 평지 점검에서는 견딜 만했지만
     `axis_sweep`은 (스윕값 × 시드)회를 돌므로 컴파일만 몇 시간이 된다.
@@ -268,7 +268,7 @@ def _report_off_band(env: NavEnv, rows: list[dict]) -> float | None:
     그런데 그 평지는 **요철을 피해 갈 수 있는 우회로**이기도 하다. 2026-08-06에
     실제로 그렇게 됐고, 영상으로 보기 전까지 level 6.00을 그대로 믿을 뻔했다.
 
-    ⚠️ 넓이로 막을 수 없다 — 되먹임이 없으면 y는 시간에 대해 **2차로** 자란다.
+    주의 — 넓이로 막을 수 없다 — 되먹임이 없으면 y는 시간에 대해 **2차로** 자란다.
     그래서 제어기 쪽에 진로 유지기를 넣었고(`guidance_controller`의 `hold`),
     이 함수는 그것이 실제로 듣고 있는지 매 실행 확인하는 계측이다.
     """
@@ -298,13 +298,13 @@ def evaluate(env: NavEnv | None = None, n: int = 5, cfg: HLCConfig | None = None
 
     Args:
         full: `True`면 반환 dict에 `rows`(궤적·qpos 전체)와 `env`를 넣는다.
-            ⚠️ 기본은 **False**다 — 이 함수가 셀 마지막 줄에 오면 Colab이 반환값을
+            주의 — 기본은 **False**다 — 이 함수가 셀 마지막 줄에 오면 Colab이 반환값을
             자동 출력하는데, `rows`에는 시드마다 (600, 19) qpos가 들어 있어 화면이
             수천 줄로 터진다. 2026-08-06과 08-07에 두 번 발생했다
             (`wtw_nav/dev.py`의 "Colab 셀 작성 규약" 규칙 5).
     """
     env = env or NavEnv(cfg or default_config())
-    # ⚠️ 코스 길이는 `course.length`가 아니라 **지형이 정한다**(사다리·미로).
+    # 주의 — 코스 길이는 `course.length`가 아니라 **지형이 정한다**(사다리·미로).
     #    옛 출력은 지형 실행에서도 10.0을 찍어 실제와 어긋났다 (2026-08-02).
     print(f"수동 제어기 평가 — 코스 {env._course_len:.2f} m, "
           f"타임아웃 {env.cfg.term.timeout_s} s ({env._max_steps} 스텝)"
@@ -330,14 +330,14 @@ def evaluate(env: NavEnv | None = None, n: int = 5, cfg: HLCConfig | None = None
     _report_off_beam(env, rows)
 
     if rate < 1.0:
-        # ⚠️ 지형 사다리에서는 **도달 실패가 정상이고 그것이 측정값이다.** 사다리는
+        # 주의 — 지형 사다리에서는 **도달 실패가 정상이고 그것이 측정값이다.** 사다리는
         #    못 넘는 곳에서 멈추도록 설계됐으므로(`modules.ladder`) 여기서 "env를
         #    고치라"고 하면 정반대의 지시가 된다. 그 경고는 평지에서만 의미가 있다.
         if env.terrain_meta is not None:
             print(f"\n  지형 사다리이므로 도달 실패는 정상입니다 — 읽을 값은 "
                   f"**평균 level {lv:.2f}**이고, 이것이 대조군 A의 기준선입니다.")
         else:
-            print("\n  ⚠️ 수동 제어기가 목표에 못 갔습니다. **PPO를 돌리기 전에** 원인을 찾으십시오.")
+            print("\n  주의 — 수동 제어기가 목표에 못 갔습니다. **PPO를 돌리기 전에** 원인을 찾으십시오.")
             print("     점검: ① 유도 벡터 부호 ② 종료 조건이 너무 이른가(낙상/교착)")
             print("           ③ 타임아웃이 코스 길이 대비 충분한가 ④ 액션 범위")
         return _summary(rate, lv, 0.0, rows, env, full)
@@ -348,9 +348,9 @@ def evaluate(env: NavEnv | None = None, n: int = 5, cfg: HLCConfig | None = None
     margin = 1.0 - worst_t / env.cfg.term.timeout_s
     print(f"타임아웃 여유 {margin:.0%}  (최장 {worst_t:.1f} s / {env.cfg.term.timeout_s:.0f} s)")
     if margin < 0.3:
-        print("\n  ⚠️ 여유가 부족합니다. 기준 제어기조차 간신히 통과하면 학습 초기에는")
+        print("\n  주의 — 여유가 부족합니다. 기준 제어기조차 간신히 통과하면 학습 초기에는")
         print("     도달 보너스를 거의 못 받아 학습이 어려워집니다.")
-        # ⚠️ 미로에서 "코스를 줄이라"는 조언은 **실행 불가능하다** — 코스 길이가
+        # 주의 — 미로에서 "코스를 줄이라"는 조언은 **실행 불가능하다** — 코스 길이가
         #    BFS 경로라 설정값이 아니다. `CourseConfig.length`는 평지에서만 쓰인다.
         #    (2026-08-10에 미로 실행이 이 문구를 찍어 엉뚱한 데를 보게 만들었다.)
         if env.maze_meta is not None:
@@ -381,7 +381,7 @@ def axis_sweep(env: NavEnv, axis: str, values, n: int = 3, **ctrl_kw) -> dict:
       · 특정 고정값이 `level`을 올린다 -> **HLC 없이도 되는 부분**이다. PPO 결과는
         반드시 이 기준선 위에서 읽어야 한다.
 
-    ⚠️ env를 재사용한다 (지형·모델이 같으므로 JIT 재컴파일이 없다). 지형을 바꾸면
+    주의 — env를 재사용한다 (지형·모델이 같으므로 JIT 재컴파일이 없다). 지형을 바꾸면
     새 env를 만들어야 한다.
     """
     print(f"\n=== 축 스윕: {axis} — 지형 '{env.cfg.terrain.kind}', 시드 {n}개 ===")
@@ -410,20 +410,20 @@ def video(env: NavEnv, rng_seed: int = 0, save: str | None = None,
 
         scripted.video(env, pitch=0.3, save="slope_a0.mp4")
 
-    ⚠️ 렌더 크기 인자가 `width`/`height`가 **아니라** `px_w`/`px_h`인 이유:
+    주의 — 렌더 크기 인자가 `width`/`height`가 **아니라** `px_w`/`px_h`인 이유:
     `height`는 **WTW 명령 축 이름**이다. `width`/`height`로 두면
     `video(env, height=-0.22)`가 명령이 아니라 세로 픽셀 수로 흡수되어
     `MjrRect(0, 0, 640, -0.22)`로 죽는다 (2026-08-06에 실제로 발생). 게다가
     에러가 렌더러 생성 지점에서 나므로 GL 백엔드 문제로 오진하게 된다.
 
-    ⚠️ 기본적으로 **아무것도 반환하지 않는다** — 노트북이 qpos/궤적 배열을 통째로
+    주의 — 기본적으로 **아무것도 반환하지 않는다** — 노트북이 qpos/궤적 배열을 통째로
     찍어버리기 때문이다(`llc.check.preview`와 같은 이유, 2026-08-06에 실제로
     화면을 몇 천 줄 채웠다). 데이터가 필요하면 `return_data=True`.
 
-    ⚠️ 프레임은 HLC 주기(10 Hz)로 기록된 것이므로 `every=1`이 **필수**다
+    주의 — 프레임은 HLC 주기(10 Hz)로 기록된 것이므로 `every=1`이 **필수**다
     (`llc.check.render` 주석). 그래서 `fps`는 실시간 속도를 뜻한다 — 10이 등속이다.
 
-    ⚠️ 종료(`done`) 이후 스캔은 계속 돌지만 그 구간의 물리는 의미가 없다
+    주의 — 종료(`done`) 이후 스캔은 계속 돌지만 그 구간의 물리는 의미가 없다
     (자동 리셋이 없다). 그래서 `end`에서 자른다.
     """
     from wtw_nav.llc import check
@@ -444,7 +444,7 @@ def video(env: NavEnv, rng_seed: int = 0, save: str | None = None,
     frames = check.render(env.mj_model, r["qpos"][:e + 1], fps=fps,
                           every=1, width=px_w, height=px_h,
                           distance=distance)
-    # ⚠️ 미로를 'flat'으로 찍던 버그 (2026-08-10). `terrain.kind`는 미로에서 None이라
+    # 주의 — 미로를 'flat'으로 찍던 버그 (2026-08-10). `terrain.kind`는 미로에서 None이라
     #    "flat seed0 level0"이 떠서 지형이 안 만들어진 것처럼 보였다 — 실제로는
     #    미로가 정상이었다. 영상 제목이 틀리면 영상으로 하는 판정을 못 믿게 된다.
     if env.maze_meta is not None:
@@ -460,7 +460,7 @@ def video(env: NavEnv, rng_seed: int = 0, save: str | None = None,
 def _geom_top(mj_model, mj_data) -> float:
     """현재 자세에서 **충돌하는 로봇 geom의 최고점** z (m).
 
-    ⚠️ `geom_rbound`(경계구 반지름)를 쓰면 안 된다. 몸통 박스의 경계구는 반지름
+    주의 — `geom_rbound`(경계구 반지름)를 쓰면 안 된다. 몸통 박스의 경계구는 반지름
     0.20 m라 실제 윗면(중심+0.057)보다 3.5배 높게 나온다 — 터널 높이를 그걸로
     정하면 실제로 통과 가능한 터널을 "불가능"으로 판정한다.
     회전을 반영한 **실제 z 방향 반경**을 형상별로 계산한다.
@@ -501,17 +501,17 @@ def body_clearance(env: NavEnv | None = None, values=None, n: int = 2,
     **명령값이 곧 통과 높이가 아니고**, 실제로 알아야 하는 것은 "그 명령으로
     걸을 때 로봇의 최고점이 얼마인가" 하나다. 평지에서 걸리면서 재면 된다.
 
-    ⚠️ 정지 자세가 아니라 **걷는 중**에 잰다. 보행은 몸통을 상하로 흔들고,
+    주의 — 정지 자세가 아니라 **걷는 중**에 잰다. 보행은 몸통을 상하로 흔들고,
     터널은 그 최대값에 걸린다. `settle_s` 이후 구간만 쓴다(초기 자세 안정화).
 
-    ⚠️ 명령 하한(-0.22)이 곧 능력 하한이 아니다. 명령을 낮춰도 로봇이 따라오지
+    주의 — 명령 하한(-0.22)이 곧 능력 하한이 아니다. 명령을 낮춰도 로봇이 따라오지
     못하면 실제 높이는 안 내려간다 — 그래서 **명령 대비 실측**을 같이 찍는다.
     """
     import mujoco
 
     env = env or NavEnv(default_config())
     if env.cfg.terrain.kind is not None:
-        print("  ⚠️ 지형이 걸린 env입니다. 몸높이는 **평지**에서 재야 합니다 "
+        print("  주의 — 지형이 걸린 env입니다. 몸높이는 **평지**에서 재야 합니다 "
               "(지형 기복이 최고점에 섞입니다).")
     lo, hi = env.cfg.action.height
     if values is None:
@@ -591,7 +591,7 @@ def foot_track(env: NavEnv | None = None, values=None, n: int = 3,
                settle_s: float = 2.0, **ctrl_kw) -> dict:
     """★ 실측 — **발을 어디까지 좁힐 수 있나** (= 외나무다리 필요폭).
 
-    ⚠️ 재는 것은 "외나무다리를 건널 수 있나"가 **아니다.** 그건 두 가지가 섞인
+    주의 — 재는 것은 "외나무다리를 건널 수 있나"가 **아니다.** 그건 두 가지가 섞인
     질문이다 — 발 간격(LLC 기하)과 표류(항법). 이 함수는 **평지에서** 둘을
     분리해서 재고, 실지형 사다리는 그 예측을 확인하는 용도로만 쓴다.
     터널에서 이 절차가 정확히 맞았다 (`body_clearance` -> level 5.00/4.00 적중).
@@ -599,7 +599,7 @@ def foot_track(env: NavEnv | None = None, values=None, n: int = 3,
     세 수를 낸다:
 
         W_foot  = 2 × max|Δy|  — **몸 기준** 좌우 발 간격. 순수 LLC 기하.
-                  ⚠️ `stance_width` **명령값이 아니다.** 2026-08-09 실측에서
+                  주의 — `stance_width` **명령값이 아니다.** 2026-08-09 실측에서
                   명령 0.12 -> W_foot 0.275(2.29배)로 **포화**했다. 넓히는 쪽은
                   1:1로 듣는데(구간 이득 1.12) 좁히는 쪽은 1/3만 듣는다(0.37) —
                   중립 0.25에서 하한 0.12까지 끝까지 좁혀도 0.065 m(19%)뿐이다.
@@ -607,25 +607,25 @@ def foot_track(env: NavEnv | None = None, values=None, n: int = 3,
                   필요한 다리 전폭. ★ 사다리 값의 기준은 이 수다.
         D       = max|y_body| — 표류. 순수 항법 (`hold=1` 기준).
 
-    ⚠️ **`need = 2×(max|y_foot,world| + r)`는 폐기했다 (2026-08-09).** 월드 좌표에는
+    주의 — **`need = 2×(max|y_foot,world| + r)`는 폐기했다 (2026-08-09).** 월드 좌표에는
     표류가 섞여 있고 **표류는 코스 길이에 따라 자란다** — 평지 10 m에서 D=0.179였던
     것이 다리 사다리 21 m에서 0.350이 됐다. 즉 그 수는 로봇의 성질이 아니라
     "이 코스에서의 값"이었고, 그런 수를 설계에 쓰면 코스가 길어질 때마다 틀린다.
     기하(길이 무관)와 표류(길이 의존)를 **합치지 않고 따로 낸다.**
 
-    ⚠️ D도 **넓힐수록 커진다** (0.179 -> 0.753). 외나무다리에서 `stance_width`를
+    주의 — D도 **넓힐수록 커진다** (0.179 -> 0.753). 외나무다리에서 `stance_width`를
     넓히는 것은 기하로 얻고 항법으로 잃는 게 아니라 **양쪽 다 손해**다.
 
-    ⚠️ **스탠스 발만 센다** (`z < STANCE_Z`). 스윙 중인 발은 다리 밖으로 지나가도
+    주의 — **스탠스 발만 센다** (`z < STANCE_Z`). 스윙 중인 발은 다리 밖으로 지나가도
     떨어지지 않는다 — 전부 세면 필요폭이 `footswing`만큼 부풀려진다.
 
-    ⚠️ 걷는 중에 잰다. `settle_s` 이전은 초기 자세 안정화라 버린다.
+    주의 — 걷는 중에 잰다. `settle_s` 이전은 초기 자세 안정화라 버린다.
     """
     import mujoco
 
     env = env or flat_env()
     if env.cfg.terrain.kind is not None:
-        print("  ⚠️ 지형이 걸린 env입니다. 발 간격은 **평지**에서 재야 합니다 "
+        print("  주의 — 지형이 걸린 env입니다. 발 간격은 **평지**에서 재야 합니다 "
               "(지형에 걸려 발이 벌어지면 LLC 기하가 아니라 지형을 재게 됩니다).")
     lo, hi = env.cfg.action.stance_width
     if values is None:
@@ -689,17 +689,17 @@ def foot_track(env: NavEnv | None = None, values=None, n: int = 3,
               f"(명령 대비 {b['ratio']:.2f}배)  ⇒ 기하 바닥 **{b['floor']:.3f} m**")
         gains = [r["gain"] for r in out.values() if r["gain"] == r["gain"]]
         if gains and gains[0] < 0.6 * gains[-1]:
-            print(f"  ⚠️ **포화입니다.** 이득이 하한 쪽 {gains[0]:.2f}, 상한 쪽 "
+            print(f"  주의 — **포화입니다.** 이득이 하한 쪽 {gains[0]:.2f}, 상한 쪽 "
                   f"{gains[-1]:.2f} — 넓히는 쪽은 1:1로 듣는데 좁히는 쪽은 "
                   f"{gains[0] / gains[-1]:.0%}만 듭니다. 명령 하한을 더 내려도 "
                   f"거의 얻는 것이 없습니다 (`body_height`와 같은 현상).")
         ds = [r["drift"] for r in out.values()]
         if ds[-1] > 1.5 * ds[0]:
-            print(f"  ⚠️ 표류 D가 발 간격과 **같이** 커집니다 ({ds[0]:.2f} -> "
+            print(f"  주의 — 표류 D가 발 간격과 **같이** 커집니다 ({ds[0]:.2f} -> "
                   f"{ds[-1]:.2f}). 넓게 벌리는 것은 기하로 얻고 항법으로 잃는 게 "
                   f"아니라 **양쪽 다 손해**입니다.")
         # ★ 사다리는 **기하 바닥**을 기준으로 잡는다. 표류를 더해 만든 값은
-        #   코스 길이에 따라 변해서 재현되지 않는다 (위 ⚠️ 참조).
+        #   코스 길이에 따라 변해서 재현되지 않는다 (위 주의 — 참조).
         #   마지막 단이 곧 바닥이므로 "여기서 실패 = 순수 기하 한계"가 된다.
         rungs = ", ".join(f"{b['floor'] * k:.2f}"
                           for k in (2.5, 2.0, 1.7, 1.4, 1.2, 1.0))
@@ -734,7 +734,7 @@ def _report_off_beam(env: NavEnv, rows: list[dict]) -> dict | None:
 
     m = env.mj_model
     d = mujoco.MjData(m)
-    # ⚠️ **다리 위에서만** 잰다 (2026-08-09). 전 구간 최대를 쓰면 다리 사이
+    # 주의 — **다리 위에서만** 잰다 (2026-08-09). 전 구간 최대를 쓰면 다리 사이
     #    회복 구간에서 난 표류가 섞여, "다리가 좁아서"인지 "벌판에서 밀려서"인지
     #    구분이 안 된다. 첫 실측이 정확히 그렇게 오염됐다 — 평지 0.179 대 사다리
     #    0.350의 차이는 다리가 아니라 12 m 회복 구간이 만든 것이었다.
@@ -760,7 +760,7 @@ def _report_off_beam(env: NavEnv, rows: list[dict]) -> dict | None:
             off += int((np.abs(st[:, 1]) > hw + FOOT_R).sum())
 
     if on == 0:
-        print("  ⚠️ 다리 위에서 보낸 스텝이 없습니다 — 첫 다리에 닿기 전에 "
+        print("  주의 — 다리 위에서 보낸 스텝이 없습니다 — 첫 다리에 닿기 전에 "
               "끝났습니다. 사다리 첫 단을 넓히거나 타임아웃을 늘리십시오.")
         return None
     frac = off / max(tot, 1)
@@ -796,7 +796,7 @@ def phase_sweep(values=None, offsets: int = 8, n: int = 1, kind: str = "ledge",
                 success: float = 0.8, **ctrl_kw) -> dict:
     """★ 실측 — **턱**. 최대 높이가 아니라 **높이별 성공 *확률*** 을 잰다.
 
-    ⚠️ LLC는 `measure_heights=False`라 지형을 **원리적으로 못 본다.** 그래서 턱
+    주의 — LLC는 `measure_heights=False`라 지형을 **원리적으로 못 본다.** 그래서 턱
     앞에 도착했을 때의 **보행 위상**(어느 발이 스윙 중이고 몇 %인지)이 제어
     불가능한 난수이고, 같은 명령·같은 높이여도 결과가 갈린다. "넘을 수 있는 최대
     높이"라는 질문 자체가 성립하지 않는다.
@@ -808,10 +808,10 @@ def phase_sweep(values=None, offsets: int = 8, n: int = 1, kind: str = "ledge",
 
     기존 `rng_seed` 스윕은 초기 자세 잡음만 흔들어 위상을 덮지 못했다.
 
-    ⚠️ `x0` 하나가 **MJX 모델 하나 = 컴파일 한 번**이다. offsets=8이면 8회 컴파일이
+    주의 — `x0` 하나가 **MJX 모델 하나 = 컴파일 한 번**이다. offsets=8이면 8회 컴파일이
     들지만 피할 수 없다(지형 geom 위치가 바뀐다). 시드는 그 안에서 공짜다.
 
-    ⚠️ 사다리는 **순차적**이라 i단을 실패하면 i+1단은 시도조차 못 한다. 즉
+    주의 — 사다리는 **순차적**이라 i단을 실패하면 i+1단은 시도조차 못 한다. 즉
     "i단 성공률"은 독립 시행이 아니라 **생존곡선**이다. 그래서 둘을 같이 낸다:
         주변확률 = i단 통과 / 전체 실행       (미로 설계용 — 앞을 다 넘어야 하므로)
         조건부   = i단 통과 / i단 도달        (그 높이 자체의 능력)

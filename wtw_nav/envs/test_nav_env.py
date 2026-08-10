@@ -81,7 +81,7 @@ def main() -> int:
           f"vx={raw_off:+.4f} (기대 {0.05 - cfg.action.vx_bias:+.4f})")
 
     # action_for: 원하는 물리값 -> 액션 (수동 제어기·테스트용). 왕복이 맞아야 한다.
-    # ⚠️ vx만 `vx_bias`가 빠져 나온다. 그게 의도다 — "명령 vx == 실제 vx"를 만드는
+    # 주의 — vx만 `vx_bias`가 빠져 나온다. 그게 의도다 — "명령 vx == 실제 vx"를 만드는
     #    보정이므로, 왕복 비교에서도 빼줘야 한다.
     want = dict(vx=1.0, yaw=-0.8, height=-0.10, footswing=0.20)
     a_want = cf.action_for(cfg.action, **want)

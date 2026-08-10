@@ -8,13 +8,13 @@
 하나이므로(`terrain.maze` 주석) 학습 seed에서 잰 성공률은 **레이아웃 암기와 구분되지
 않는다.** 그래서 이 모듈의 기본 동작은 항상 **학습에 쓰지 않은 미로**를 포함한다.
 
-⚠️ 관측 37D에는 절대좌표도 맵 크기도 없다(`envs.nav_env._obs`). 따라서 정책은
+주의 — 관측 37D에는 절대좌표도 맵 크기도 없다(`envs.nav_env._obs`). 따라서 정책은
 원리적으로 **크기·배치에 무관**해야 한다. n을 키웠을 때 성공률이 떨어지면 그것은
 "일반화 실패"이기 전에 **유도벡터 `d_norm`을 먼저 의심할 자리**다 — 관측 중 유일하게
 `_course_len`으로 정규화된 항이라 코스 길이에 따라 변화율이 달라진다
 (`hlc.guidance` / `envs.nav_env._guidance`).
 
-⚠️ 실패를 **원인별로** 세지 않으면 대응을 못 정한다. 낙상·교착·시간초과는 각각
+주의 — 실패를 **원인별로** 세지 않으면 대응을 못 정한다. 낙상·교착·시간초과는 각각
 물리·유도·예산 문제이고 고치는 곳이 전부 다르다. `rollouts()`가 이를 분류한다.
 """
 
@@ -32,11 +32,11 @@ from wtw_nav.envs.nav_env import NavEnv
 def load(path: str = "checkpoints/hlc_p4_maze.pkl"):
     """체크포인트 -> `(정책함수, 학습설정, 로그, 스텝)`.
 
-    ⚠️ 저장된 `params` 3-튜플은 `(normalizer, policy, value)`이고, brax의
+    주의 — 저장된 `params` 3-튜플은 `(normalizer, policy, value)`이고, brax의
     `make_inference_fn`에는 **앞의 둘만** 넘긴다. 셋을 그대로 넘기면 조용히
     틀린 정책이 나오는 것이 아니라 구조 오류로 죽는다 — 다행이다.
 
-    ⚠️ 네트워크 크기는 저장된 `cfg`에서 읽는다. `default_config()`를 쓰면
+    주의 — 네트워크 크기는 저장된 `cfg`에서 읽는다. `default_config()`를 쓰면
     학습 때 값을 바꾼 실행에서 형상 불일치가 난다.
     """
     import functools
@@ -80,7 +80,7 @@ def rollouts(policy, cfg: HLCConfig, n: int = 20, env: NavEnv | None = None,
              seed0: int = 0) -> dict:
     """정책을 `n`개 시드로 돌려 **원인별로** 집계한다.
 
-    ⚠️ env를 재사용하면 JIT 재컴파일이 없다. 미로가 바뀌면 새 env가 필요하다
+    주의 — env를 재사용하면 JIT 재컴파일이 없다. 미로가 바뀌면 새 env가 필요하다
     (미로 하나 = MJX 모델 하나).
     """
     env = env or NavEnv(cfg)
@@ -102,7 +102,7 @@ def rollouts(policy, cfg: HLCConfig, n: int = 20, env: NavEnv | None = None,
         q = np.asarray(qpos)
         dist = float(st.info["dist"])
         reached = dist < cfg.course.goal_radius
-        # ⚠️ `done`은 낙상·교착에만 선다(타임아웃은 brax truncation이라 제외 —
+        # 주의 — `done`은 낙상·교착에만 선다(타임아웃은 brax truncation이라 제외 —
         #    `nav_env.step` 주석). 그래서 done 여부로 셋을 가를 수 있다.
         if reached:
             cause = "reached"
@@ -138,7 +138,7 @@ SUITE = (("학습 미로", 5, 0), ("같은 크기·다른 배치", 5, 7),
 def report(policy, suite=SUITE, n: int = 20, video: bool = True) -> dict:
     """★ 평가 본체 — 학습 미로 + 미학습 배치 + 더 큰 미로.
 
-    ⚠️ 미로마다 MJX 모델이 새로 컴파일된다(수십 초). 다섯 줄이면 수 분이다.
+    주의 — 미로마다 MJX 모델이 새로 컴파일된다(수십 초). 다섯 줄이면 수 분이다.
     """
     out = {}
     for label, n_cell, seed in suite:
@@ -159,7 +159,7 @@ def report(policy, suite=SUITE, n: int = 20, video: bool = True) -> dict:
     if base:
         others = [r["rate"] for k, r in out.items() if k != (5, 0)]
         if others and base["rate"] - max(others) > 0.2:
-            print("\n  ⚠️ **학습 미로에서만 잘합니다 — 레이아웃 암기입니다.**")
+            print("\n  주의 — **학습 미로에서만 잘합니다 — 레이아웃 암기입니다.**")
             print("     관측에 절대좌표가 없으므로 암기 경로는 라이다 패턴뿐입니다.")
             print("     대응: 학습 시 미로 seed를 배치로 섞거나(모델 여러 개), "
                   "`init_jitter`를 키우십시오.")
@@ -200,7 +200,7 @@ def curve(log, every: int = 1) -> None:
     if not log:
         print("  로그가 없습니다 (옛 체크포인트).")
         return
-    # ⚠️ `monitor.history`는 dict가 아니라 **`(step, metrics)` 튜플 목록**이다.
+    # 주의 — `monitor.history`는 dict가 아니라 **`(step, metrics)` 튜플 목록**이다.
     print(f"{'steps':>10s} {'reached':>8s} {'dist':>7s} {'fell':>6s} {'len':>7s}")
     print("-" * 42)
     best, best_step = 0.0, 0

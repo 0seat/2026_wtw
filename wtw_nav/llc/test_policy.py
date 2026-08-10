@@ -39,7 +39,7 @@ XML = f"{ROOT}/mujoco_menagerie/unitree_go1/scene.xml"
 # policy.py를 실제로 import 하려면 jax **와** mujoco.mjx가 둘 다 있어야 한다.
 # (로컬 mujoco 3.1.0에는 jax는 있어도 mjx가 없다 -> 그때는 numpy 미러로 검증한다.)
 # policy.py를 실제로 import 하려면 jax **와** mujoco.mjx가 둘 다 살아 있어야 한다.
-# ⚠️ ImportError만 잡으면 안 된다. 커널에 반쯤 초기화된 jax가 남아 있으면
+# 주의 — ImportError만 잡으면 안 된다. 커널에 반쯤 초기화된 jax가 남아 있으면
 #    `AttributeError: partially initialized module 'jax' has no attribute '_src'`가
 #    나는데, 그걸 못 잡으면 fallback 없이 그대로 죽는다.
 _missing = []

@@ -14,7 +14,7 @@ BFS 거리장(플래너) ──▶ HLC 10 Hz, 8D 명령 (PPO) ──▶ LLC 50 H
 | 현재 | **P4 미로 도달률 99.2%** (5×5, 5.9M 스텝, 234분) — 스크립트 제어기보다 1.6배 빠름 |
 | 다음 | P5 일반화 판정 (미학습 배치·큰 미로) |
 
-> 📖 **설계·측정 문서는 [`docs/`](docs/)에 있다.** 순서대로 읽으면 손댈 수 있는 상태가 된다:
+> **설계·측정 문서는 [`docs/`](docs/)에 있다.** 순서대로 읽으면 손댈 수 있는 상태가 된다:
 > [문서 지도](docs/README.md) → [01_llc](docs/01_llc.md) → [02_hlc](docs/02_hlc.md) → [03_results](docs/03_results.md)
 
 ---
@@ -30,7 +30,7 @@ git clone https://github.com/improbable-ai/walk-these-ways.git
 git clone https://github.com/google-deepmind/mujoco_menagerie.git
 ```
 
- **사전학습 가중치는 WTW 저장소 안에 들어 있다.** 클론하면
+주의 — **사전학습 가중치는 WTW 저장소 안에 들어 있다.** 클론하면
 `walk-these-ways/runs/gait-conditioned-agility/pretrain-v0/train/025417.456545/`에
 `body_latest.jit` · `adaptation_module_latest.jit` · `parameters.pkl` ·
 `curriculum/distribution.pkl`이 함께 온다. 넷 다 필요하다 —
@@ -107,7 +107,7 @@ os.chdir(P); sys.path.insert(0, P)
 
 ```python
 from wtw_nav import bench
-bench.breakdown()          #  raw env.step만 잰다. 실제는 ×0.58 (PPO 갱신 30% + eval 18%)
+bench.breakdown()          # raw env.step만 잰다. 실제는 ×0.58 (PPO 갱신 30% + eval 18%)
 ```
 
 ```python
@@ -179,9 +179,9 @@ limits.report()
 과거 루트에 있던 `wtw_mjx_core.py` / `train_hlc.py` / `run_mjx_sweep.py`가 **유실 사고**를
 냈고, Colab에서 `sys.path` 취급도 불안정하다.
 
- **`walk-these-ways/`와 `mujoco_menagerie/`는 수정하지 않는다.** 외부 읽기 전용이다.
+주의 — **`walk-these-ways/`와 `mujoco_menagerie/`는 수정하지 않는다.** 외부 읽기 전용이다.
 
- **Colab에서 `%autoreload`를 쓰지 말 것** — autoreload가 import 하는 `imp`는 Python
+주의 — **Colab에서 `%autoreload`를 쓰지 말 것** — autoreload가 import 하는 `imp`는 Python
 3.12에서 제거됐고 Colab은 3.12다. 대신 `from wtw_nav.dev import reload_wtw; reload_wtw()`
 후 다시 import 한다. **기존 객체는 옛 클래스에 묶여 있으니 재생성해야 한다.**
 

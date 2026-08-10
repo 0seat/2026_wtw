@@ -5,7 +5,7 @@
     from wtw_nav import train
     make_inference_fn, params, metrics = train.run()
 
-⚠️ 체크포인트는 반드시 Drive 아래(프로젝트 폴더)에 저장한다 — Colab `/content`는
+주의 — 체크포인트는 반드시 Drive 아래(프로젝트 폴더)에 저장한다 — Colab `/content`는
 런타임 종료 시 소실된다.
 """
 
@@ -47,7 +47,7 @@ def _check_ppo_config(p) -> None:
     floor = p.num_evals * per_update
     print(f"PPO: 갱신 1회당 {per_update:,} env steps -> 총 {n_updates}회 갱신")
     if n_updates < 100:
-        print(f"  ⚠️ 갱신 {n_updates}회는 너무 적습니다. PPO는 수백 회가 필요합니다.\n"
+        print(f"  주의 — 갱신 {n_updates}회는 너무 적습니다. PPO는 수백 회가 필요합니다.\n"
               f"     batch_size/unroll_length/num_minibatches를 줄이거나 "
               f"num_timesteps를 늘리십시오.\n"
               f"     (2026-07-29: 39회로 돌렸다가 정점 후 단조 하강으로 실패)")
@@ -60,13 +60,13 @@ def _check_ppo_config(p) -> None:
     actual = after_init * per_epoch * per_update
     if actual > p.num_timesteps * 1.02:
         clean = after_init * per_epoch * per_update
-        print(f"  ⚠️ 실제로는 {actual:,} 스텝을 돕니다 "
+        print(f"  주의 — 실제로는 {actual:,} 스텝을 돕니다 "
               f"(지정 {p.num_timesteps:,}의 {actual / p.num_timesteps:.1%}). "
               f"brax가 epoch를 올림해서입니다.\n"
               f"     예산을 정확히 맞추려면 num_timesteps를 "
               f"(num_evals-1) × {per_update:,} 의 배수로: 예 {clean:,}")
     if floor > p.num_timesteps:
-        print(f"  ⚠️ **num_timesteps가 무시됩니다.** eval마다 최소 1회 학습하므로 실제로는\n"
+        print(f"  주의 — **num_timesteps가 무시됩니다.** eval마다 최소 1회 학습하므로 실제로는\n"
               f"     >= num_evals × {per_update:,} = {floor:,} 스텝을 돕니다 "
               f"(지정값 {p.num_timesteps:,}).\n"
               f"     num_evals를 {max(1, p.num_timesteps // per_update)} 이하로 낮추십시오.")
@@ -150,7 +150,7 @@ def run(cfg: HLCConfig | None = None, out_dir: str = "checkpoints",
         with open(f"{out_dir}/hlc_{tag}_log.pkl", "wb") as f:
             pickle.dump({"cfg": cfg, "log": mon.history, "error": repr(e)}, f)
         mon.close()
-        print(f"\n⚠️ 학습이 {(time.time()-t0)/60:.1f}분에서 죽었습니다: "
+        print(f"\n주의 — 학습이 {(time.time()-t0)/60:.1f}분에서 죽었습니다: "
               f"{type(e).__name__}: {e}")
         print(f"   마지막 체크포인트 {path}, 로그 {out_dir}/hlc_{tag}_log.pkl 는 남았습니다.")
         print("   `eval/episode_nan`이 0이 아니면 물리 발산입니다 "

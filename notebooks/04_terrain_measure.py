@@ -5,7 +5,7 @@ A안(2026-07-29): LLC는 고정하고 **불가능한 지형지물은 지운다.*
 결과는 `wtw_nav/terrain/limits.py`에 손으로 옮겨 적고, 그 파일이 이후 모든
 지형 생성의 관문이 된다(미측정 지형은 `validate()`가 거부한다).
 
-Colab에서 (⚠️ **mujoco import 전에** MUJOCO_GL을 잡아야 영상이 나온다)::
+Colab에서 (주의 — **mujoco import 전에** MUJOCO_GL을 잡아야 영상이 나온다)::
 
     from google.colab import drive; drive.mount('/content/drive')
     %cd "/content/drive/Othercomputers/BPC/D:/02_projects/2026_wtw"
@@ -48,7 +48,7 @@ Colab에서 (⚠️ **mujoco import 전에** MUJOCO_GL을 잡아야 영상이 �
 
 [셀 B] 외나무다리 ② — **그 예측을 실지형으로 확인**한다.
 
-⚠️ 코드를 고쳤으면 셀 2(`reload_wtw()`)를 먼저 돌릴 것. `BEAM_APPROACH_W`가
+주의 — 코드를 고쳤으면 셀 2(`reload_wtw()`)를 먼저 돌릴 것. `BEAM_APPROACH_W`가
 지형 모델을 바꾸므로 캐시된 env를 쓰면 옛 지형으로 돌아간다::
 
     BEST = min(FT, key=lambda k: FT[k]["w_foot"])
@@ -63,7 +63,7 @@ Colab에서 (⚠️ **mujoco import 전에** MUJOCO_GL을 잡아야 영상이 �
     S.video(env_b, stance_width=BEST, hold=0.0, save="beamB_hold0.mp4")
     print("판별표는 docs/03_results.md §3·§7.2. `evaluate`가 찍는 3수로 읽습니다.")
 
-[셀 C] 턱 — **성공률**을 잰다 (⚠️ 위상 8점 = MJX 컴파일 8회, 첫 실행이 길다)::
+[셀 C] 턱 — **성공률**을 잰다 (주의 — 위상 8점 = MJX 컴파일 8회, 첫 실행이 길다)::
 
     PH0 = S.phase_sweep(offsets=8, n=1)                      # A0 = 바닥
     PH1 = S.phase_sweep(offsets=8, n=1, footswing=0.32)      # A1 = 발 최대로 들기
@@ -85,7 +85,7 @@ from wtw_nav.terrain import limits, measure
 
 
 def main():
-    """⚠️ 기본은 **표류 대조 하나만** 돌린다 (롤아웃 2회).
+    """주의 — 기본은 **표류 대조 하나만** 돌린다 (롤아웃 2회).
 
     스윕 5종을 전부 도는 것(`measure.all_sweeps()`)은 2026-07-29 실행에서
     **지형이 아니라 표류를 측정한다**는 것이 드러나 기본 경로에서 뺐다. 근거:

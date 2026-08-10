@@ -7,7 +7,7 @@
 구조 (`docs/02_hlc.md` §1):
     HLC 10 Hz  ──action 8D──▶ command_filter ──15D──▶ LLC 50 Hz (frozen, ×5) ──▶ MJX
 
-⚠️ JAX 제약: `reset`은 `jit`/`vmap` 안에서 돌아야 한다. `mujoco.MjData()`나
+주의 — JAX 제약: `reset`은 `jit`/`vmap` 안에서 돌아야 한다. `mujoco.MjData()`나
 `mjx.put_data()`를 reset 안에서 호출하면 병렬 학습이 불가능하다 —
 `__init__`에서 템플릿을 1회 만들고 `qpos`/`qvel`만 `replace` 한다.
 """
@@ -122,13 +122,13 @@ class NavEnv(Env):
         worst = self._course_len + back
         need = worst / 0.7                                 # 실측 순항 ~0.88 m/s
         if need > c.term.timeout_s:
-            print(f"  ⚠️ 코스 {worst:.1f} m(최악 출발점)는 0.7 m/s로 {need:.0f}s가 "
+            print(f"  주의 — 코스 {worst:.1f} m(최악 출발점)는 0.7 m/s로 {need:.0f}s가 "
                   f"필요한데 timeout은 {c.term.timeout_s:.0f}s입니다. "
                   f"도달이 불가능하면 reach 보너스를 한 번도 못 받습니다 "
                   f"-> term.timeout_s를 {need + 10:.0f} 이상으로 올리십시오.")
         total = c.reward.progress * self._course_len
         if c.reward.reach < 0.3 * total:
-            print(f"  ⚠️ reach({c.reward.reach})가 progress 총합({total:.0f})의 "
+            print(f"  주의 — reach({c.reward.reach})가 progress 총합({total:.0f})의 "
                   f"{c.reward.reach / total:.0%}뿐입니다. 마무리 유인이 사라집니다 "
                   f"-> {0.5 * total:.0f} 근처로. (`envs.reward_audit` 재실행)")
         if self.maze_meta is not None:
@@ -150,12 +150,12 @@ class NavEnv(Env):
                 print(f"  벽 geom {wg}개 -> 정적 후보 쌍 ≈ {wg * 31:,} (평지는 ≈31)")
                 modules.broadphase_report(self.mj_model)
                 if not c.max_geom_pairs:
-                    print(f"     ⚠️ `max_geom_pairs`가 꺼져 있습니다 — 후보 쌍 "
+                    print(f"     주의 — `max_geom_pairs`가 꺼져 있습니다 — 후보 쌍 "
                           f"전부가 매 스텝 좁은단계를 돕니다. **학습 전에 "
                           f"`bench.breakdown(cfg)`로 처리량을 재십시오.**")
             from wtw_nav.terrain.maze import WALL_H
             if WALL_H < 0.45:
-                print(f"  ⚠️ 벽 높이 {WALL_H} m가 라이다 높이(몸통 z≈0.34)에 너무 "
+                print(f"  주의 — 벽 높이 {WALL_H} m가 라이다 높이(몸통 z≈0.34)에 너무 "
                       f"가깝습니다. 정책이 벽을 못 봅니다 -> maze.WALL_H를 올리십시오.")
             return
         if c.terrain.kind is not None:
@@ -183,13 +183,13 @@ class NavEnv(Env):
             # 위상 암기가 깨지는 기준은 "출발점 분포 폭 vs 장애물 주기"다.
             span = 2.0 * c.course.init_x
             if span < c.terrain.spacing * 0.5:
-                print(f"  ⚠️ 출발 분포 폭 {span:.1f} m가 장애물 주기 "
+                print(f"  주의 — 출발 분포 폭 {span:.1f} m가 장애물 주기 "
                       f"{c.terrain.spacing} m의 {span / c.terrain.spacing:.0%}뿐입니다. "
                       f"유도벡터 d_norm으로 위상을 역산할 여지가 남아 측정이 "
                       f"낙관 편향됩니다 -> course.init_x를 올리십시오.")
 
     # -------------------------------------------------- 유도 (코스 / 미로 공통)
-    # ⚠️ 분기는 **여기 파이썬 수준에서만** 한다. jit 안에서 갈라지면 두 경로가 다
+    # 주의 — 분기는 **여기 파이썬 수준에서만** 한다. jit 안에서 갈라지면 두 경로가 다
     #    추적되고, 미로가 아닌 실행에서도 거리장 배열이 상수로 박힌다.
     def _guidance(self, data) -> jnp.ndarray:
         """(cos φ, sin φ, d_norm). 두 경로의 출력 형식이 같다 (`guidance` 모듈 주석)."""
@@ -217,13 +217,13 @@ class NavEnv(Env):
 
         관절각은 넣지 않는다 — LLC 소관이며 보행 위상 과적합 위험 (`docs/02_hlc.md` §2).
 
-        ⚠️ 몸통 높이는 **지면 기준(AGL)** 이다 (2026-08-02). 절대 z를 넣으면
+        주의 — 몸통 높이는 **지면 기준(AGL)** 이다 (2026-08-02). 절대 z를 넣으면
         slope 사다리에서 z가 0 -> 3.9 m로 단조 증가하므로 **z가 곧 x의 대리변수**가
         된다. 그러면 정책은 지형이 아니라 고도계를 보고 램프를 예측하고,
         `course.init_x` 랜덤화가 지키려던 것(위상 암기 차단)이 무력화된다.
         평지·미로에서는 `_ground_z`가 0이라 이 변경이 아무 영향도 없다.
 
-        ⚠️ 라이다는 **벽이 있는 코스에서만 정보를 준다.** 평지·지형 사다리에서는
+        주의 — 라이다는 **벽이 있는 코스에서만 정보를 준다.** 평지·지형 사다리에서는
         몸통 높이(0.34 m)를 지나는 것이 없어 전 빔이 1.0으로 상수다. 그건 버그가
         아니라 센서의 정의다(`hlc/sensors.py` 모듈 주석). 즉 이 16D는 `maze.py`가
         생기기 전까지 무용하며, 미리 넣어 둔 이유는 관측 차원이 바뀌면 정책을
@@ -292,7 +292,7 @@ class NavEnv(Env):
             "dist_at_window": self._remaining(data),
             "reached": jnp.zeros(()),
         }
-        # ⚠️ brax `EvalWrapper`는 metrics를 **에피소드 전체에 걸쳐 합산**해
+        # 주의 — brax `EvalWrapper`는 metrics를 **에피소드 전체에 걸쳐 합산**해
         #    `eval/episode_<key>`로 보고한다. 그래서 매 스텝 `dist`를 넣으면
         #    거리×스텝수(예: 1286.9)가 찍혀 읽을 수 없다. `dist*done`으로 넣으면
         #    종료 스텝에서 한 번만 더해져 합계 = **최종 거리**가 된다.
@@ -345,7 +345,7 @@ class NavEnv(Env):
                   + c.reward.terminate * jnp.maximum(fell, stuck)
                   + c.reward.action_rate * jnp.sum(d_cmd * d_cmd))
 
-        # ⚠️ **타임아웃을 여기서 `done`에 넣지 말 것.** brax `EpisodeWrapper`는
+        # 주의 — **타임아웃을 여기서 `done`에 넣지 말 것.** brax `EpisodeWrapper`는
         #     truncation = where(steps >= episode_length, 1 - state.done, 0)
         # 으로 계산한다. 우리가 같은 스텝에 done=1을 세우면 truncation=0이 되어
         # brax가 시간 초과를 **진짜 종료로 오인**하고 가치 부트스트랩을 0으로 자른다.
@@ -378,7 +378,7 @@ class NavEnv(Env):
             dist_at_window=jnp.where(window_end, dist, info["dist_at_window"]),
             reached=reached,
         )
-        # ⚠️ metrics를 **새 dict로 교체하지 말 것.** brax의 EvalWrapper가 `metrics['reward']`를
+        # 주의 — metrics를 **새 dict로 교체하지 말 것.** brax의 EvalWrapper가 `metrics['reward']`를
         #    끼워 넣는데, 교체하면 그 키가 사라져 `lax.scan` 캐리의 pytree 구조가 어긋난다
         #    ("carry input ... 5 children ... output ... 4 children, symmetric difference {'reward'}").
         #    brax 내장 env들도 새로 만들지 않고 update 한다.
